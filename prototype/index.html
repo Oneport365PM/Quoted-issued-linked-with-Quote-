@@ -370,35 +370,35 @@ const STAGES = [
 const stageLabel = k => STAGES.find(s => s.key === k).label;
 
 const deals = [
-  { id: 'DL-26-11-021', name: 'Ovuvuenem', amount: 200, owner: 'EA', cls: 'Growth', created: '2026-11-05', stage: 'prospect', contact: 'Tola Ovuvuenem', product: 'FreightSaver' },
-  { id: 'DL-26-11-020', name: "Brian's logistics", amount: 2000, owner: 'KU', cls: 'Growth', created: '2026-11-05', stage: 'prospect', contact: 'Brian Okafor', product: 'Haulage' },
-  { id: 'DL-26-10-018', name: 'Fast track export', amount: 2300, owner: 'NM', cls: 'Growth', created: '2026-10-29', stage: 'prospect', contact: 'Grace Kelmo', product: 'FreightSaver' },
-  { id: 'DL-26-10-017', name: 'Soni test logistics pvt ltd', amount: 50000, owner: 'SE', cls: 'SME', created: '2026-10-28', stage: 'prospect', contact: 'Ravi Soni', product: 'Ocean freight' },
-  { id: 'DL-26-11-022', name: 'Fast track export', amount: 4000, owner: 'SE', cls: 'Growth', created: '2026-11-06', stage: 'contacted', contact: 'Grace Kelmo', product: 'FreightSaver' },
-  { id: 'DL-26-10-016', name: 'Fast track export', amount: 20000, owner: 'NM', cls: 'Growth', created: '2026-10-19', stage: 'contacted', contact: 'Grace Kelmo', product: 'Ocean freight' },
-  { id: 'DL-26-08-009', name: 'Airtel networks limited', amount: 0, owner: 'GO', cls: 'Enterprise', created: '2026-08-24', stage: 'contacted', contact: 'Ifeoma Bello', product: 'Air freight' },
-  { id: 'DL-26-10-014', name: 'Chevron', amount: 10000, owner: 'OA', cls: 'Growth', created: '2026-10-08', stage: 'contacted', contact: 'Daniel Ekong', product: 'Project cargo' },
-  { id: 'DL-26-11-023', name: 'Manuchar Trading House Int Nigeria', amount: 3500, owner: 'KA', cls: 'Enterprise', created: '2026-11-03', stage: 'qualified', contact: 'Ekene Abiaziem', product: 'Ocean freight', rfqs: ['RFQ-26-11-015'],
+  { id: 'OP-26-11-021', name: 'Ovuvuenem', amount: 200, owner: 'EA', cls: 'Growth', created: '2026-11-05', stage: 'prospect', contact: 'Tola Ovuvuenem', product: 'FreightSaver' },
+  { id: 'OP-26-11-020', name: "Brian's logistics", amount: 2000, owner: 'KU', cls: 'Growth', created: '2026-11-05', stage: 'prospect', contact: 'Brian Okafor', product: 'Haulage' },
+  { id: 'OP-26-10-018', name: 'Fast track export', amount: 2300, owner: 'NM', cls: 'Growth', created: '2026-10-29', stage: 'prospect', contact: 'Grace Kelmo', product: 'FreightSaver' },
+  { id: 'OP-26-10-017', name: 'Soni test logistics pvt ltd', amount: 50000, owner: 'SE', cls: 'SME', created: '2026-10-28', stage: 'prospect', contact: 'Ravi Soni', product: 'Ocean freight' },
+  { id: 'OP-26-11-022', name: 'Fast track export', amount: 4000, owner: 'SE', cls: 'Growth', created: '2026-11-06', stage: 'contacted', contact: 'Grace Kelmo', product: 'FreightSaver' },
+  { id: 'OP-26-10-016', name: 'Fast track export', amount: 20000, owner: 'NM', cls: 'Growth', created: '2026-10-19', stage: 'contacted', contact: 'Grace Kelmo', product: 'Ocean freight' },
+  { id: 'OP-26-08-009', name: 'Airtel networks limited', amount: 0, owner: 'GO', cls: 'Enterprise', created: '2026-08-24', stage: 'contacted', contact: 'Ifeoma Bello', product: 'Air freight' },
+  { id: 'OP-26-10-014', name: 'Chevron', amount: 10000, owner: 'OA', cls: 'Growth', created: '2026-10-08', stage: 'contacted', contact: 'Daniel Ekong', product: 'Project cargo' },
+  { id: 'OP-26-11-023', name: 'Manuchar Trading House Int Nigeria', amount: 3500, owner: 'KA', cls: 'Enterprise', created: '2026-11-03', stage: 'qualified', contact: 'Ekene Abiaziem', product: 'Ocean freight', rfqs: ['RFQ-26-11-015'],
     note: 'Chemical import, Aarhus to Apapa. Customer needs the NAFDAC permit cleared before shipping.' },
-  { id: 'DL-26-09-012', name: 'Regency overseas (rol)', amount: 10900, owner: 'GO', cls: 'SME', created: '2026-09-22', stage: 'qualified', contact: 'Arjun Mehta', product: 'Ocean freight' },
-  { id: 'DL-26-09-011', name: 'Alliance chemicals global', amount: 550, owner: 'GO', cls: 'SME', created: '2026-09-22', stage: 'qualified', contact: 'Uche Nwosu', product: 'Customs clearance' },
-  { id: 'DL-26-09-010', name: 'Cybele cosmetics', amount: 7840, owner: 'GO', cls: 'SME', created: '2026-09-22', stage: 'qualified', contact: 'Funmi Adeyemi', product: 'Air freight' },
-  { id: 'DL-26-09-013', name: 'Premium agro', amount: 2940, owner: 'GO', cls: 'Growth', created: '2026-09-22', stage: 'qualified', contact: 'Sani Musa', product: 'FreightSaver' },
-  { id: 'DL-26-11-024', name: 'Manuchar Trading House Int Nigeria', amount: 73, owner: 'KA', cls: 'Enterprise', created: '2026-11-04', stage: 'quote', contact: 'Ekene Abiaziem', product: 'Customs clearance (NAFDAC permit)', quotes: ['Q-26-11-017'],
+  { id: 'OP-26-09-012', name: 'Regency overseas (rol)', amount: 10900, owner: 'GO', cls: 'SME', created: '2026-09-22', stage: 'qualified', contact: 'Arjun Mehta', product: 'Ocean freight' },
+  { id: 'OP-26-09-011', name: 'Alliance chemicals global', amount: 550, owner: 'GO', cls: 'SME', created: '2026-09-22', stage: 'qualified', contact: 'Uche Nwosu', product: 'Customs clearance' },
+  { id: 'OP-26-09-010', name: 'Cybele cosmetics', amount: 7840, owner: 'GO', cls: 'SME', created: '2026-09-22', stage: 'qualified', contact: 'Funmi Adeyemi', product: 'Air freight' },
+  { id: 'OP-26-09-013', name: 'Premium agro', amount: 2940, owner: 'GO', cls: 'Growth', created: '2026-09-22', stage: 'qualified', contact: 'Sani Musa', product: 'FreightSaver' },
+  { id: 'OP-26-11-024', name: 'Manuchar Trading House Int Nigeria', amount: 73, owner: 'KA', cls: 'Enterprise', created: '2026-11-04', stage: 'quote', contact: 'Ekene Abiaziem', product: 'Customs clearance (NAFDAC permit)', quotes: ['Q-26-11-017'],
     note: 'Permit-to-clear request. Quote total is NGN 105,000 (about $73).' },
-  { id: 'DL-26-09-008', name: 'Eunisell', amount: 5200, owner: 'AJ', cls: 'SME', created: '2026-09-03', stage: 'quote', contact: 'Kunle Adebayo', product: 'Ocean freight' },
-  { id: 'DL-26-07-004', name: 'Ovuvuenem', amount: 2000, owner: 'EA', cls: 'Enterprise', created: '2026-07-15', stage: 'quote', contact: 'Tola Ovuvuenem', product: 'Haulage' },
-  { id: 'DL-26-07-005', name: 'Money minded', amount: 1, owner: 'BC', cls: 'SME', created: '2026-07-15', stage: 'quote', contact: 'Biggie Cole', product: 'FreightSaver' },
-  { id: 'DL-26-07-006', name: 'Crochets', amount: 44444, owner: 'CE', cls: 'SME', created: '2026-07-15', stage: 'quote', contact: 'Ada Crochets', product: 'Ocean freight' },
-  { id: 'DL-26-11-019', name: 'Fast track export', amount: 1000, owner: 'NM', cls: 'Growth', created: '2026-11-04', stage: 'closed', outcome: 'won', contact: 'Grace Kelmo', product: 'FreightSaver' },
-  { id: 'DL-26-10-015', name: 'Fast track export', amount: 30000, owner: 'NM', cls: 'SME', created: '2026-10-09', stage: 'closed', outcome: 'won', contact: 'Grace Kelmo', product: 'Ocean freight' },
-  { id: 'DL-26-10-013', name: 'Fast track export', amount: 20000, owner: 'NM', cls: 'SME', created: '2026-10-09', stage: 'closed', outcome: 'won', contact: 'Grace Kelmo', product: 'FreightSaver' },
-  { id: 'DL-26-08-007', name: 'Delta foods', amount: 6800, owner: 'KU', cls: 'Growth', created: '2026-08-12', stage: 'closed', outcome: 'lost', contact: 'Efe Okoro', product: 'Reefer haulage' },
+  { id: 'OP-26-09-008', name: 'Eunisell', amount: 5200, owner: 'AJ', cls: 'SME', created: '2026-09-03', stage: 'quote', contact: 'Kunle Adebayo', product: 'Ocean freight' },
+  { id: 'OP-26-07-004', name: 'Ovuvuenem', amount: 2000, owner: 'EA', cls: 'Enterprise', created: '2026-07-15', stage: 'quote', contact: 'Tola Ovuvuenem', product: 'Haulage' },
+  { id: 'OP-26-07-005', name: 'Money minded', amount: 1, owner: 'BC', cls: 'SME', created: '2026-07-15', stage: 'quote', contact: 'Biggie Cole', product: 'FreightSaver' },
+  { id: 'OP-26-07-006', name: 'Crochets', amount: 44444, owner: 'CE', cls: 'SME', created: '2026-07-15', stage: 'quote', contact: 'Ada Crochets', product: 'Ocean freight' },
+  { id: 'OP-26-11-019', name: 'Fast track export', amount: 1000, owner: 'NM', cls: 'Growth', created: '2026-11-04', stage: 'closed', outcome: 'won', contact: 'Grace Kelmo', product: 'FreightSaver' },
+  { id: 'OP-26-10-015', name: 'Fast track export', amount: 30000, owner: 'NM', cls: 'SME', created: '2026-10-09', stage: 'closed', outcome: 'won', contact: 'Grace Kelmo', product: 'Ocean freight' },
+  { id: 'OP-26-10-013', name: 'Fast track export', amount: 20000, owner: 'NM', cls: 'SME', created: '2026-10-09', stage: 'closed', outcome: 'won', contact: 'Grace Kelmo', product: 'FreightSaver' },
+  { id: 'OP-26-08-007', name: 'Delta foods', amount: 6800, owner: 'KU', cls: 'Growth', created: '2026-08-12', stage: 'closed', outcome: 'lost', contact: 'Efe Okoro', product: 'Reefer haulage' },
 ];
 
 const rfqs = {
   'RFQ-26-11-015': {
-    id: 'RFQ-26-11-015', status: 'Quoted', quoteStatus: 'Ready', created: '2026-11-05T11:20', dealId: 'DL-26-11-023',
+    id: 'RFQ-26-11-015', status: 'Quoted', quoteStatus: 'Ready', created: '2026-11-05T11:20', dealId: 'OP-26-11-023',
     service: 'Ocean Freight FCL', customer: 'Manuchar Trading House Int Nigeria', contact: 'Ekene Abiaziem', email: 'ekene.odagu@manuchar.com',
     origin: 'Aarhus (DKAAR) Denmark', destination: 'Apapa (NGAPP) Nigeria', routeShort: 'Aarhus, Denmark → Apapa, Nigeria',
     goodsValue: 'USD 40,000,000', bl: '—', branch: 'Lagos', source: 'Backoffice', incoterm: 'CFR', owner: 'KA', documents: '—',
@@ -410,7 +410,7 @@ const rfqs = {
 
 const quotes = {
   'Q-26-11-017': {
-    id: 'Q-26-11-017', rfqId: 'RFQ-26-11-015', dealId: 'DL-26-11-024', status: 'Ready', issued: '2026-11-06T10:05', validDays: 7, cur: '₦',
+    id: 'Q-26-11-017', rfqId: 'RFQ-26-11-015', dealId: 'OP-26-11-024', status: 'Ready', issued: '2026-11-06T10:05', validDays: 7, cur: '₦',
     charges: [{ basis: 'Nafdac Permit', unit: 3, ft20: 3, cost: 30000, margin: '14.2857%', sell: 105000, desc: 'Per Container' }],
   },
 };
@@ -426,15 +426,15 @@ const QUOTE_LIST = [
 ];
 
 const history = {
-  'DL-26-11-023': [
+  'OP-26-11-023': [
     { t: 'Moved deal from Contacted to Qualified', by: 'KA', at: '2026-11-04T16:10', tag: 'Qualified', comment: 'Customer has approved for payment.' },
     { t: 'Moved deal from Prospect to Contacted', by: 'KA', at: '2026-11-03T12:30', tag: 'Contacted' },
   ],
-  'DL-26-11-024': [
+  'OP-26-11-024': [
     { t: 'Moved deal from Qualified to Quote Issued', by: 'KA', at: '2026-11-06T10:12', tag: 'Quote Issued', comment: 'Quote sent to Ekene. Valid for 7 days.' },
     { t: 'Moved deal from Prospect to Qualified', by: 'KA', at: '2026-11-04T15:00', tag: 'Qualified' },
   ],
-  'DL-26-10-013': [
+  'OP-26-10-013': [
     { t: 'Deal marked Won', by: 'NM', at: '2026-10-09T09:44', tag: 'Won', tagCls: 'won', comment: 'Won' },
     { t: 'Moved deal from Prospect to Quote Issued', by: 'NM', at: '2026-10-09T09:44', tag: 'Quote Issued', comment: 'Customer is ready to move forward' },
   ],
@@ -459,7 +459,7 @@ const dealById = id => deals.find(x => x.id === id);
 /* Rule: an RFQ is tied to a deal in Qualified, a quote is tied to a deal in Quote Issued. A deal only shows its own records. */
 const dealQuotes = deal => (deal.quotes || []).filter(q => quotes[q] && quotes[q].dealId === deal.id);
 const dealRfqs = deal => (deal.rfqs || []).filter(r => rfqs[r] && rfqs[r].dealId === deal.id);
-const ID_RE = /\b(RFQ-\d{2}-\d{2}-\d{3}|Q-\d{2}-\d{2}-\d{3}|DL-\d{2}-\d{2}-\d{3})\b/g;
+const ID_RE = /\b(RFQ-\d{2}-\d{2}-\d{3}|Q-\d{2}-\d{2}-\d{3}|OP-\d{2}-\d{2}-\d{3})\b/g;
 const exists = id => !!(rfqs[id] || quotes[id] || dealById(id));
 const idLink = id => exists(id) ? `<a class="idlink" href="#${id.toLowerCase()}">${id}</a>` : id;
 /* escape text, then turn any known RFQ / quote / deal number into a link */
@@ -504,7 +504,7 @@ function render() {
   if (navStack[navStack.length - 1] !== h) navStack.push(h);
   const id = h.toUpperCase();
   const v = $('#view');
-  if (h.startsWith('dl-') && dealById(id)) v.innerHTML = dealView(dealById(id));
+  if (h.startsWith('op-') && dealById(id)) v.innerHTML = dealView(dealById(id));
   else if (h.startsWith('rfq-') && rfqs[id]) v.innerHTML = rfqView(rfqs[id]);
   else if (h.startsWith('q-') && quotes[id]) v.innerHTML = quoteView(quotes[id]);
   else { v.innerHTML = pipelineView(); bindPipeline(); }
@@ -804,7 +804,7 @@ function saveDeal(dealId) {
 }
 let seq = 23;
 function newDealModal() {
-  modal(`<h3>New deal</h3><p class="lead">Starts in Prospect. ID: DL-26-11-0${seq}</p>
+  modal(`<h3>New deal</h3><p class="lead">Starts in Prospect. ID: OP-26-11-0${seq}</p>
     <div class="field"><label for="n-n">Company</label><input id="n-n" placeholder="e.g. Dangote Fertilizer"></div>
     <div class="frow"><div class="field"><label for="n-ct">Contact</label><input id="n-ct"></div><div class="field"><label for="n-a">Amount (USD)</label><input id="n-a" type="number" min="0" value="0"></div></div>
     <div class="frow"><div class="field"><label for="n-o">Owner</label><select id="n-o">${Object.entries(OWNERS).map(([k, o]) => `<option value="${k}" ${k === 'NM' ? 'selected' : ''}>${o.name}</option>`).join('')}</select></div>
@@ -815,7 +815,7 @@ function newDealModal() {
 function createDeal() {
   const name = $('#n-n').value.trim();
   if (!name) { $('#n-err').innerHTML = '<p class="err">Enter the company name to create the deal.</p>'; return; }
-  const id = `DL-26-11-0${seq++}`;
+  const id = `OP-26-11-0${seq++}`;
   deals.unshift({ id, name, amount: Math.max(0, +$('#n-a').value || 0), owner: $('#n-o').value, cls: $('#n-c').value, created: '2026-11-06', stage: 'prospect', contact: $('#n-ct').value.trim() || 'Not set', product: 'Not set' });
   closeModal(); toast(`${id} created`); render();
 }
