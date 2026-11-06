@@ -12,7 +12,7 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
 - RFQ and quote pages follow the live OnePort365 RFQ and Quotes screens.
 - A deal can only move to Quote Issued once a quote has been issued (and auto-linked) for it.
 - Moving a deal into Qualified (from Prospect or Contacted) opens a step-by-step KYC checklist (6 steps:
-  company details, contact person, trade profile, compliance, payment, documents). Every answer is a checkbox:
+  company details, contact person, trade profile, compliance, payment, documents; no business-type question). Every answer is a checkbox:
   tick, press Next, move to the next step. The stage only changes once the last step is submitted. The result
   (Passed / Needs review, with the reasons) shows on the deal page under "KYC checks".
 - Board cards can be dragged between columns. Dropping a Prospect/Contacted deal on Qualified opens the KYC

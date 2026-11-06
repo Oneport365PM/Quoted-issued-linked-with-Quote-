@@ -324,7 +324,7 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .field.bad input, .field.bad select, .field.bad .choices label { border-color: var(--red); }
 .field.bad > label { color: var(--red); }
 .confirm { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink-2); flex: 1 1 100%; }
-.mf .linkbtn { margin-right: auto; }
+.mf #k-back { margin-left: auto; }
 .confirm input { accent-color: var(--green); margin-top: 3px; }
 .confirm.bad { color: var(--red); }
 .linkbtn { background: none; border: 0; color: var(--green); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; padding: 0; font-size: 13px; }
@@ -483,7 +483,7 @@ const QUOTE_LIST = [
 
 const MANUCHAR_KYC = {
   company: ['Registered company name', 'CAC registration (RC) number', 'Tax identification number (TIN)', 'Registered business address', 'In business for more than 1 year'],
-  type: ['Importer'], contact: ['Full name', 'Role / job title', 'Business email', 'Phone number'],
+  contact: ['Full name', 'Role / job title', 'Business email', 'Phone number'],
   dir: ['Import'], vol: ['5 to 20 TEU'], services: ['Ocean freight', 'Customs clearance', 'Haulage'],
   compliance: ['Cargo needs regulatory permits (NAFDAC, SON, NAQS)'],
   terms: ['14 days credit'],
@@ -928,7 +928,6 @@ function saveDeal(dealId) {
 const KYC_SECTIONS = [
   { t: 'Company details', q: [
     { id: 'company', l: 'Tick each detail you have verified', req: 1, opts: ['Registered company name', 'CAC registration (RC) number', 'Tax identification number (TIN)', 'Registered business address', 'In business for more than 1 year'] },
-    { id: 'type', l: 'Business type', req: 1, opts: ['Importer', 'Exporter', 'Manufacturer', 'Trader / distributor', 'Freight forwarder'] },
   ] },
   { t: 'Contact person', q: [
     { id: 'contact', l: 'Tick each contact detail you have confirmed', req: 1, opts: ['Full name', 'Role / job title', 'Business email', 'Phone number'] },
@@ -981,7 +980,6 @@ function kycModal(dealId, pending, prefill, startStep = 0) {
     <div class="mb">${KYC_SECTIONS.map((sec, i) => `<div class="kyc-sec" data-step="${i}" hidden><h4><span>${i + 1}</span>${sec.t}</h4>${sec.q.map(q => kycField(q, a)).join('')}
       ${i === n - 1 ? `<label class="confirm" id="k-confirm-wrap"><input type="checkbox" id="k-confirm"><span>I confirm these details were checked against the customer's documents.</span></label>` : ''}</div>`).join('')}</div>
     <div class="mf">
-      <button class="linkbtn" onclick="kycSample('${dealId}')">Fill sample answers</button>
       <button class="btn" id="k-back" onclick="kycGo(-1)">Back</button>
       <button class="btn dark" id="k-next" onclick="kycGo(1, '${dealId}')">Next</button>
       <div id="k-err" style="flex-basis:100%"></div>
@@ -1013,9 +1011,6 @@ function kycGo(dir, dealId) {
   missing.forEach(q => $(`[data-q="${q.id}"]`).classList.add('bad'));
   if (missing.length) { $('#k-err').innerHTML = `<p class="err" style="margin:0">Tick at least one box in each highlighted question to continue.</p>`; return; }
   if (kycStep < KYC_SECTIONS.length - 1) kycShow(kycStep + 1); else submitKyc(dealId);
-}
-function kycSample(dealId) {
-  kycModal(dealId, window._kycPending, { ...MANUCHAR_KYC, type: ['Trader / distributor'], compliance: [], docs: ['CAC certificate', 'TIN certificate', "Director's valid ID", 'Proof of address (utility bill)'] }, kycStep);
 }
 function readKyc() {
   const a = {};
@@ -1053,7 +1048,6 @@ function kycPanel(x) {
     ${flags.length ? `<ul class="flags">${flags.map(f => `<li>${ICON.warn}${esc(f)}</li>`).join('')}</ul>` : ''}
     <div class="kv">
       <div><div class="k">Company details verified</div><div class="v">${(a.company || []).length} of 5</div></div>
-      <div><div class="k">Business type</div><div class="v">${esc(show(a.type))}</div></div>
       <div><div class="k">Trade direction</div><div class="v">${esc(show(a.dir))}</div></div>
       <div><div class="k">Payment terms</div><div class="v">${esc(show(a.terms))}</div></div>
       <div><div class="k">Documents received</div><div class="v">${(a.docs || []).length} of 5</div></div>
