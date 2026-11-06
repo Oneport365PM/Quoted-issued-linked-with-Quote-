@@ -433,7 +433,7 @@ const history = {
   ],
   'DL-26-11-024': [
     { t: 'Moved deal from Qualified to Quote Issued', by: 'KA', at: '2026-11-06T10:12', tag: 'Quote Issued', comment: 'Q-26-11-017 sent to Ekene. Valid for 7 days.' },
-    { t: 'Q-26-11-017 issued and linked to this deal', by: 'SYS', at: '2026-11-06T10:05', tag: 'Auto-linked', tagCls: 'link', comment: 'Quote raised from RFQ-26-11-015.' },
+    { t: 'Q-26-11-017 issued and linked to this deal', by: 'SYS', at: '2026-11-06T10:05', tag: 'Auto-linked', tagCls: 'link', comment: 'Quote is ready. Valid for 7 days.' },
     { t: 'Moved deal from Prospect to Qualified', by: 'KA', at: '2026-11-04T15:00', tag: 'Qualified' },
   ],
   'DL-26-10-013': [
@@ -458,7 +458,9 @@ const daysAgo = s => Math.round((TODAY - d(s)) / 864e5);
 const nowIso = () => { const x = new Date(); return `2026-11-06T${pad(x.getHours())}:${pad(x.getMinutes())}`; };
 const av = k => `<span class="av" style="background:${OWNERS[k].color}">${k}</span>`;
 const dealById = id => deals.find(x => x.id === id);
-const dealQuotes = deal => [...new Set([...(deal.quotes || []), ...(deal.rfqs || []).flatMap(r => rfqs[r].quotes)])];
+/* Rule: an RFQ is tied to a deal in Qualified, a quote is tied to a deal in Quote Issued. A deal only shows its own records. */
+const dealQuotes = deal => (deal.quotes || []).filter(q => quotes[q] && quotes[q].dealId === deal.id);
+const dealRfqs = deal => (deal.rfqs || []).filter(r => rfqs[r] && rfqs[r].dealId === deal.id);
 const ID_RE = /\b(RFQ-\d{2}-\d{2}-\d{3}|Q-\d{2}-\d{2}-\d{3}|DL-\d{2}-\d{2}-\d{3})\b/g;
 const exists = id => !!(rfqs[id] || quotes[id] || dealById(id));
 const idLink = id => exists(id) ? `<a class="idlink" href="#${id.toLowerCase()}">${id}</a>` : id;
@@ -475,7 +477,7 @@ const ICON = {
   warn: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/></svg>',
 };
 function linkChips(deal) {
-  const rs = deal.rfqs || [];
+  const rs = dealRfqs(deal);
   const out = rs.map(r => `<a class="chip rfq" href="#${r.toLowerCase()}" title="Open ${r}">${ICON.rfq}${r}</a>`);
   dealQuotes(deal).forEach(q => out.push(`<a class="chip quote" href="#${q.toLowerCase()}" title="Open ${q}">${ICON.quote}${q}</a>`));
   return out.join('');
@@ -650,16 +652,14 @@ function quotePill(status) { return `<span class="pill ${status === 'Ready' ? 'r
 function quoteNode(q, showRfq) {
   return `<div class="node quote">
     <div class="node-row"><span class="ic">${ICON.quote}</span>
-      <div class="tx">${idLink(q.id)} &nbsp;${quotePill(q.status)}<div>${showRfq ? `From ${idLink(q.rfqId)} · ` : ''}Issued ${longD(q.issued)} · valid for ${q.validDays} days</div></div>
+      <div class="tx">${idLink(q.id)} &nbsp;${quotePill(q.status)}<div>Issued ${longD(q.issued)} · valid for ${q.validDays} days</div></div>
       <span class="amt tnum">${qMoney(q, quoteTotal(q))}</span>
       <a class="btn sm" href="#${q.id.toLowerCase()}">Open quote ${ICON.go}</a></div>
     <div class="kids"><div class="empty-kid">No shipment yet. A shipment is created when the customer accepts this quote.</div></div>
   </div>`;
 }
 function linkedPanel(x) {
-  const rs = (x.rfqs || []).map(r => rfqs[r]);
-  const underRfq = new Set(rs.flatMap(r => r.quotes));
-  const direct = (x.quotes || []).filter(q => !underRfq.has(q)).map(q => quotes[q]);
+  const rs = dealRfqs(x).map(r => rfqs[r]);
   const qs = dealQuotes(x);
   let callout = '';
   if (x.stage === 'qualified' && !rs.length) callout = `<div class="callout">${ICON.warn}<span>No RFQ yet. When an RFQ is raised for this deal, the system links it here automatically.</span></div>`;
@@ -668,14 +668,13 @@ function linkedPanel(x) {
       <div class="node-row"><span class="ic">${ICON.rfq}</span>
         <div class="tx">${idLink(r.id)} &nbsp;${rfqPill(r)}<div>${esc(r.routeShort)} · ${esc(r.service)}</div></div>
         <a class="btn sm" href="#${r.id.toLowerCase()}">Open RFQ ${ICON.go}</a></div>
-      <div class="kids">${r.quotes.length ? r.quotes.map(q => quoteNode(quotes[q], false)).join('') : '<div class="empty-kid">No quotes yet. Quotes created from this RFQ will appear here.</div>'}</div>
-    </div>`).join('') + direct.map(q => quoteNode(q, true)).join('');
+    </div>`).join('') + qs.map(q => quoteNode(quotes[q])).join('');
   const nR = rs.length, nQ = qs.length;
   return `<div class="panel">
-    <div class="lk-head"><p class="sec-t">Linked RFQs, quotes &amp; shipments</p><span class="tag">Linked automatically</span></div>
-    <div class="lk-sum tnum">${nR} RFQ${nR === 1 ? '' : 's'} · ${nQ} quote${nQ === 1 ? '' : 's'} · 0 shipments</div>
+    <div class="lk-head"><p class="sec-t">${x.stage === 'qualified' ? 'Linked RFQ' : x.stage === 'quote' ? 'Linked quote' : 'Linked RFQs, quotes &amp; shipments'}</p><span class="tag">Linked automatically</span></div>
+    <div class="lk-sum">${x.stage === 'qualified' ? 'RFQs are tied to the deal at the Qualified stage.' : x.stage === 'quote' ? 'Quotes are tied to the deal at the Quote Issued stage.' : `${nR} RFQ${nR === 1 ? '' : 's'} · ${nQ} quote${nQ === 1 ? '' : 's'}`}</div>
     ${callout}
-    ${tree ? `<div class="tree">${tree}</div>` : `<div class="empty-box">No RFQs or quotes yet.<br>RFQs raised for this deal, and the quotes and shipments that follow, appear here automatically.</div>`}
+    ${tree ? `<div class="tree">${tree}</div>` : callout ? '' : `<div class="empty-box">Nothing linked at this stage.<br>The system ties an RFQ to the deal at Qualified, and a quote at Quote Issued.</div>`}
   </div>`;
 }
 
