@@ -4,6 +4,9 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
 
 - Every deal has an ID (`DL-YY-MM-NNN`), shown on board cards, the list view and the deal page.
 - One deal can hold many RFQs, each RFQ many quotes, each quote many shipments.
-- `RFQ-26-11-015` is linked to the Qualified deal **Regency overseas (rol)** (`DL-26-09-012`).
-- `Q-26-11-017` (from `RFQ-26-11-008`) is linked to the Quote Issued deal **Eunisell** (`DL-26-09-008`).
+- Every RFQ, quote and deal number is a clickable link wherever it appears (board chips, list view,
+  linked-records tree, deal history, RFQ page, quote Booking Details).
+- `RFQ-26-11-015` (Manuchar Trading House Int Nigeria) is linked to the Qualified deal `DL-26-11-023`.
+- `Q-26-11-017` (raised from `RFQ-26-11-015`) is linked to the Quote Issued deal `DL-26-11-024`.
+- RFQ and quote pages follow the live OnePort365 RFQ and Quotes screens.
 - Moving a deal to Quote Issued is blocked until a quote is linked.
