@@ -427,13 +427,13 @@ const QUOTE_LIST = [
 
 const history = {
   'DL-26-11-023': [
-    { t: 'RFQ-26-11-015 raised and linked to this deal', by: 'SYS', at: '2026-11-05T11:20', tag: 'Auto-linked', tagCls: 'link', comment: 'Request for permit to clear, 3 x 20ft chemical.' },
+    { t: 'RFQ raised and linked to this deal', by: 'SYS', at: '2026-11-05T11:20', tag: 'Auto-linked', tagCls: 'link', comment: 'Request for permit to clear, 3 x 20ft chemical.' },
     { t: 'Moved deal from Contacted to Qualified', by: 'KA', at: '2026-11-04T16:10', tag: 'Qualified', comment: 'Customer has approved for payment.' },
     { t: 'Moved deal from Prospect to Contacted', by: 'KA', at: '2026-11-03T12:30', tag: 'Contacted' },
   ],
   'DL-26-11-024': [
-    { t: 'Moved deal from Qualified to Quote Issued', by: 'KA', at: '2026-11-06T10:12', tag: 'Quote Issued', comment: 'Q-26-11-017 sent to Ekene. Valid for 7 days.' },
-    { t: 'Q-26-11-017 issued and linked to this deal', by: 'SYS', at: '2026-11-06T10:05', tag: 'Auto-linked', tagCls: 'link', comment: 'Quote is ready. Valid for 7 days.' },
+    { t: 'Moved deal from Qualified to Quote Issued', by: 'KA', at: '2026-11-06T10:12', tag: 'Quote Issued', comment: 'Quote sent to Ekene. Valid for 7 days.' },
+    { t: 'Quote issued and linked to this deal', by: 'SYS', at: '2026-11-06T10:05', tag: 'Auto-linked', tagCls: 'link', comment: 'Quote is ready. Valid for 7 days.' },
     { t: 'Moved deal from Prospect to Qualified', by: 'KA', at: '2026-11-04T15:00', tag: 'Qualified' },
   ],
   'DL-26-10-013': [
@@ -640,9 +640,9 @@ function dealView(x) {
     <div class="panel">
       <div class="lk-head" style="margin-bottom:20px"><p class="sec-t">Deal history</p><button class="btn primary" onclick="activityModal('${x.id}')">+ Add Activity</button></div>
       <div class="hist">${ev.map(e => `<div class="ev">
-        <div class="r"><b>${linkify(e.t)}</b>${e.tag ? `<span class="tag ${e.tagCls || ''}">${esc(e.tag)}</span>` : ''}</div>
+        <div class="r"><b>${esc(e.t)}</b>${e.tag ? `<span class="tag ${e.tagCls || ''}">${esc(e.tag)}</span>` : ''}</div>
         <div class="meta">${e.created ? `${daysAgo(e.at)} days ago · ${time(e.at)}` : `${OWNERS[e.by].name} &nbsp;•&nbsp; ${longD(e.at)} · ${time(e.at)}`}</div>
-        ${e.comment ? `<div class="cm">Comment: ${linkify(e.comment)}</div>` : ''}
+        ${e.comment ? `<div class="cm">Comment: ${esc(e.comment)}</div>` : ''}
       </div>`).join('')}</div>
     </div>
   </div>`;
