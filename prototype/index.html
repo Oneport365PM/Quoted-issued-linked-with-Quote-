@@ -298,6 +298,41 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .terms-t { font-weight: 700; font-size: 15px; margin: 30px 0 14px; padding-top: 24px; border-top: 1px solid var(--line); }
 .terms { border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px 18px 42px; margin: 0; font-size: 14px; line-height: 1.7; }
 
+/* KYC questionnaire */
+.modal.wide { width: min(780px, 100%); padding: 0; }
+.modal.wide .mh { padding: 22px 24px 14px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.modal.wide .mh .lead { margin: 0; }
+.modal.wide .mb { padding: 8px 24px 4px; }
+.modal.wide .mf { padding: 14px 24px; border-top: 1px solid var(--line); position: sticky; bottom: 0; background: var(--surface); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.kyc-sec { padding: 16px 0 6px; border-bottom: 1px solid var(--line); }
+.kyc-sec:last-child { border-bottom: 0; }
+.kyc-sec h4 { margin: 0 0 14px; font-size: 13px; letter-spacing: .6px; text-transform: uppercase; color: var(--ink-2); display: flex; gap: 8px; align-items: center; }
+.kyc-sec h4 span { width: 22px; height: 22px; border-radius: 50%; background: var(--lime); color: var(--rail); display: grid; place-items: center; font-size: 11px; }
+.kgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.kgrid .full { grid-column: 1 / -1; }
+.field label .req { color: var(--red); }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choices label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; font-size: 13px; font-weight: 400; color: var(--ink); cursor: pointer; }
+.choices label:has(input:checked) { border-color: var(--green); background: #f3faec; }
+.choices input { accent-color: var(--green); margin: 0; }
+.field.bad input, .field.bad select, .field.bad .choices label { border-color: var(--red); }
+.field.bad > label { color: var(--red); }
+.confirm { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink-2); flex: 1 1 100%; }
+.mf .linkbtn { margin-right: auto; }
+.confirm input { accent-color: var(--green); margin-top: 3px; }
+.confirm.bad { color: var(--red); }
+.linkbtn { background: none; border: 0; color: var(--green); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; padding: 0; font-size: 13px; }
+.kyc-meta { font-size: 12px; color: var(--muted); margin: -12px 0 16px; }
+.flags { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 6px; }
+.flags li { display: flex; gap: 8px; align-items: center; background: var(--amber-soft); color: #6b4a00; border-radius: 6px; padding: 7px 10px; font-size: 12.5px; }
+.kyc-all { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+.kyc-all summary { cursor: pointer; color: var(--green); font-weight: 500; font-size: 13px; }
+.kyc-all dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 20px; margin: 14px 0 0; font-size: 13px; }
+.kyc-all dt { color: var(--ink-2); }
+.kyc-all dd { margin: 0; overflow-wrap: anywhere; }
+.pill.pass { background: var(--green-soft); color: var(--green); font-weight: 600; }
+@media (max-width: 560px) { .kgrid, .kyc-all dl { grid-template-columns: minmax(0, 1fr); } }
+
 @media (max-width: 1100px) {
   .qwrap { grid-template-columns: minmax(0, 1fr); }
   .f4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -425,14 +460,32 @@ const QUOTE_LIST = [
   { id: 'Q-26-11-013', status: 'Awaiting Customer Decision', co: 'Greenpeg', svc: 'Air Freight', route: 'PNQ → LOS', date: '2026-11-04' },
 ];
 
+const MANUCHAR_KYC = {
+  legal: 'Manuchar Trading House Int Nigeria Ltd', rc: 'RC 1184527', tin: '20841735-0001', years: 'More than 5 years',
+  addr: '14 Kofo Abayomi Street, Victoria Island, Lagos', type: 'Importer',
+  cname: 'Ekene Abiaziem', role: 'Logistics Manager', email: 'ekene.odagu@manuchar.com', phone: '+234 803 555 0142',
+  dir: 'Import', vol: '5 to 20 TEU', comm: 'Industrial chemicals (non-hazardous)', lanes: 'Denmark, Belgium, China → Nigeria',
+  services: ['Ocean freight', 'Customs clearance', 'Haulage'],
+  permits: 'Yes', permitsOk: 'In progress', dg: 'No', sanc: 'No', pep: 'No',
+  terms: '14 days credit', bank: 'Zenith Bank',
+  docs: ['CAC certificate', 'TIN certificate', "Director's valid ID", 'Proof of address (utility bill)'],
+};
+/* KYC answers per deal; filled when a deal moves to Qualified */
+const kyc = {
+  'OP-26-11-023': { a: MANUCHAR_KYC, by: 'KA', at: '2026-11-04T16:05' },
+  'OP-26-11-024': { a: MANUCHAR_KYC, by: 'KA', at: '2026-11-04T14:55' },
+};
+
 const history = {
   'OP-26-11-023': [
     { t: 'Moved deal from Contacted to Qualified', by: 'KA', at: '2026-11-04T16:10', tag: 'Qualified', comment: 'Customer has approved for payment.' },
+    { t: 'KYC questionnaire completed', by: 'KA', at: '2026-11-04T16:05', tag: 'KYC: Needs review', comment: 'NAFDAC permit still in progress.' },
     { t: 'Moved deal from Prospect to Contacted', by: 'KA', at: '2026-11-03T12:30', tag: 'Contacted' },
   ],
   'OP-26-11-024': [
     { t: 'Moved deal from Qualified to Quote Issued', by: 'KA', at: '2026-11-06T10:12', tag: 'Quote Issued', comment: 'Quote sent to Ekene. Valid for 7 days.' },
     { t: 'Moved deal from Prospect to Qualified', by: 'KA', at: '2026-11-04T15:00', tag: 'Qualified' },
+    { t: 'KYC questionnaire completed', by: 'KA', at: '2026-11-04T14:55', tag: 'KYC: Needs review', comment: 'NAFDAC permit still in progress.' },
   ],
   'OP-26-10-013': [
     { t: 'Deal marked Won', by: 'NM', at: '2026-10-09T09:44', tag: 'Won', tagCls: 'won', comment: 'Won' },
@@ -634,6 +687,7 @@ function dealView(x) {
           <div class="full"><div class="k">Note</div><div class="note">${esc(x.note || 'No notes on this deal yet.')}</div></div>
         </div>
       </div>
+      ${kycPanel(x)}
     </div>
     <div class="panel">
       <div class="lk-head" style="margin-bottom:20px"><p class="sec-t">Deal history</p><button class="btn primary" onclick="activityModal('${x.id}')">+ Add Activity</button></div>
@@ -754,7 +808,7 @@ function quoteView(q) {
 }
 
 /* ---------- modals ---------- */
-function modal(html) { $('#modal-root').innerHTML = `<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`; const f = $('#modal-root input, #modal-root select, #modal-root textarea'); if (f) f.focus(); }
+function modal(html, cls = '') { $('#modal-root').innerHTML = `<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal ${cls}" role="dialog" aria-modal="true">${html}</div></div>`; const f = $('#modal-root input, #modal-root select, #modal-root textarea'); if (f) f.focus(); }
 function closeModal() { $('#modal-root').innerHTML = ''; }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
@@ -780,11 +834,12 @@ function editDealModal(dealId) {
     <div class="field"><label for="e-s">Stage</label><select id="e-s">${opts.map(([k, l]) => `<option value="${k}" ${k === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div id="e-err"></div>
     <div class="field"><label for="e-cm">Comment</label><input id="e-cm" placeholder="Why is this changing?"></div>
-    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" onclick="saveDeal('${x.id}')">Save changes</button></div>`);
+    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" id="e-save" onclick="saveDeal('${x.id}')">Save changes</button></div>`);
   const chk = () => {
-    const s = $('#e-s').value, hasR = (x.rfqs || []).length, hasQ = dealQuotes(x).length;
+    const s = $('#e-s').value, hasQ = dealQuotes(x).length, kycNext = needsKyc(x, s);
     $('#e-err').innerHTML = s === 'quote' && !hasQ ? `<p class="err">This deal can move to Quote Issued once a quote has been issued for it. The quote is linked automatically.</p>`
-      : s === 'qualified' && !hasR ? `<div class="callout">${ICON.warn}<span>No RFQ yet. It will appear on the deal automatically once one is raised.</span></div>` : '';
+      : kycNext ? `<div class="callout ok">${ICON.check}<span>Next you'll complete the KYC questionnaire. The deal moves to Qualified when it's submitted.</span></div>` : '';
+    $('#e-save').textContent = kycNext ? 'Continue to KYC' : 'Save changes';
   };
   $('#e-s').addEventListener('change', chk); chk();
 }
@@ -792,6 +847,10 @@ function saveDeal(dealId) {
   const x = dealById(dealId);
   const s = $('#e-s').value;
   if (s === 'quote' && !dealQuotes(x).length) return;
+  if (needsKyc(x, s)) {
+    const pending = { name: $('#e-n').value.trim() || x.name, amount: Math.max(0, +$('#e-a').value || 0), cls: $('#e-c').value, comment: $('#e-cm').value.trim() || undefined };
+    return kycModal(x.id, pending);
+  }
   const before = x.outcome ? (x.outcome === 'won' ? 'Won' : 'Lost') : stageLabel(x.stage);
   x.name = $('#e-n').value.trim() || x.name; x.amount = Math.max(0, +$('#e-a').value || 0); x.cls = $('#e-c').value;
   const cm = $('#e-cm').value.trim() || undefined;
@@ -802,6 +861,156 @@ function saveDeal(dealId) {
   }
   closeModal(); toast('Deal updated'); render();
 }
+/* ---------- KYC questionnaire ---------- */
+const KYC_SECTIONS = [
+  { t: 'Company details', q: [
+    { id: 'legal', l: 'Registered company name', type: 'text', req: 1 },
+    { id: 'rc', l: 'CAC registration (RC) number', type: 'text', req: 1, ph: 'e.g. RC 1234567' },
+    { id: 'tin', l: 'Tax identification number (TIN)', type: 'text', req: 1 },
+    { id: 'years', l: 'Years in business', type: 'select', opts: ['Less than 1 year', '1 to 3 years', '3 to 5 years', 'More than 5 years'] },
+    { id: 'addr', l: 'Registered business address', type: 'text', req: 1, full: 1 },
+    { id: 'type', l: 'Business type', type: 'select', opts: ['Importer', 'Exporter', 'Manufacturer', 'Trader / distributor', 'Freight forwarder'] },
+  ] },
+  { t: 'Contact person', q: [
+    { id: 'cname', l: 'Full name', type: 'text', req: 1 },
+    { id: 'role', l: 'Role / job title', type: 'text' },
+    { id: 'email', l: 'Business email', type: 'email', req: 1 },
+    { id: 'phone', l: 'Phone number', type: 'text' },
+  ] },
+  { t: 'Trade profile', q: [
+    { id: 'dir', l: 'Trade direction', type: 'radio', opts: ['Import', 'Export', 'Both'], req: 1 },
+    { id: 'vol', l: 'Expected monthly volume', type: 'select', opts: ['Under 5 TEU', '5 to 20 TEU', '20 to 50 TEU', 'Over 50 TEU', 'Air / LCL only'] },
+    { id: 'comm', l: 'Main commodities', type: 'text', req: 1 },
+    { id: 'lanes', l: 'Main origin and destination countries', type: 'text' },
+    { id: 'services', l: 'Services needed', type: 'checks', opts: ['Ocean freight', 'Air freight', 'Customs clearance', 'Haulage', 'Warehousing'], full: 1 },
+  ] },
+  { t: 'Compliance', q: [
+    { id: 'permits', l: 'Does the cargo need regulatory permits (NAFDAC, SON, NAQS)?', type: 'radio', opts: ['Yes', 'No'], req: 1, full: 1 },
+    { id: 'permitsOk', l: 'If yes, are the permits in place?', type: 'radio', opts: ['Yes', 'In progress', 'No', 'Not applicable'], full: 1 },
+    { id: 'dg', l: 'Will any shipment contain dangerous goods?', type: 'radio', opts: ['Yes', 'No'], req: 1, full: 1 },
+    { id: 'sanc', l: 'Does the customer trade with sanctioned countries or parties?', type: 'radio', opts: ['Yes', 'No'], req: 1, full: 1 },
+    { id: 'pep', l: 'Is any director or owner a politically exposed person (PEP)?', type: 'radio', opts: ['Yes', 'No'], req: 1, full: 1 },
+  ] },
+  { t: 'Payment', q: [
+    { id: 'terms', l: 'Payment terms requested', type: 'select', opts: ['Prepaid', '7 days credit', '14 days credit', '30 days credit'], req: 1 },
+    { id: 'bank', l: 'Bank name', type: 'text' },
+  ] },
+  { t: 'Documents received', q: [
+    { id: 'docs', l: 'Tick what the customer has provided', type: 'checks', opts: ['CAC certificate', 'TIN certificate', "Director's valid ID", 'Proof of address (utility bill)', 'Form M / NXP or trade licence'], full: 1 },
+  ] },
+];
+const KYC_Q = KYC_SECTIONS.flatMap(s => s.q);
+const LATER = ['qualified', 'quote', 'won'];
+/* KYC is required the first time a deal reaches Qualified or beyond */
+function needsKyc(x, target) { return LATER.includes(target) && !kyc[x.id] && ['prospect', 'contacted'].includes(x.stage) && !x.outcome; }
+function kycFlags(a) {
+  const f = [];
+  if (a.sanc === 'Yes') f.push('Trades with sanctioned countries or parties');
+  if (a.pep === 'Yes') f.push('A director or owner is a politically exposed person');
+  if (a.dg === 'Yes') f.push('Dangerous goods: needs DG handling approval');
+  if (a.permits === 'Yes' && a.permitsOk !== 'Yes') f.push('Regulatory permits not yet in place');
+  if ((a.docs || []).length < 3) f.push(`Only ${(a.docs || []).length} of 5 KYC documents received`);
+  return f;
+}
+const kycResult = a => kycFlags(a).length ? 'Needs review' : 'Passed';
+function kycField(q, a) {
+  const v = a[q.id];
+  const lab = `${esc(q.l)}${q.req ? ' <span class="req">*</span>' : ''}`;
+  let ctl;
+  if (q.type === 'select') ctl = `<select id="k-${q.id}"><option value="">Select…</option>${q.opts.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+  else if (q.type === 'radio' || q.type === 'checks') {
+    const t = q.type === 'radio' ? 'radio' : 'checkbox';
+    ctl = `<div class="choices" role="group">${q.opts.map((o, i) => `<label><input type="${t}" id="k-${q.id}-${i}" name="k-${q.id}" value="${esc(o)}" ${(t === 'radio' ? v === o : (v || []).includes(o)) ? 'checked' : ''}>${esc(o)}</label>`).join('')}</div>`;
+  } else ctl = `<input id="k-${q.id}" type="${q.type}" value="${esc(v || '')}" placeholder="${esc(q.ph || '')}">`;
+  const forId = q.type === 'radio' || q.type === 'checks' ? `k-${q.id}-0` : `k-${q.id}`;
+  return `<div class="field ${q.full ? 'full' : ''}" data-q="${q.id}"><label for="${forId}">${lab}</label>${ctl}</div>`;
+}
+function kycModal(dealId, pending, prefill) {
+  const x = dealById(dealId);
+  const a = prefill || (kyc[dealId] && kyc[dealId].a) || { legal: x.name, cname: x.contact === 'Not set' ? '' : x.contact };
+  window._kycPending = pending || null;
+  const moving = !!pending;
+  modal(`<div class="mh"><h3>KYC checks · ${esc(x.name)}</h3>
+      <p class="lead">${x.id} · ${moving ? 'Complete this questionnaire to move the deal to Qualified.' : 'Update the KYC answers for this deal.'} Questions marked <span style="color:var(--red)">*</span> are required.</p></div>
+    <div class="mb">${KYC_SECTIONS.map((sec, i) => `<div class="kyc-sec"><h4><span>${i + 1}</span>${sec.t}</h4><div class="kgrid">${sec.q.map(q => kycField(q, a)).join('')}</div></div>`).join('')}</div>
+    <div class="mf">
+      <label class="confirm" id="k-confirm-wrap"><input type="checkbox" id="k-confirm"><span>I confirm these details were checked against the customer's documents.</span></label>
+      <button class="linkbtn" onclick="kycSample('${dealId}')">Fill sample answers</button>
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn dark" onclick="submitKyc('${dealId}')">${moving ? 'Submit KYC and move to Qualified' : 'Save KYC'}</button>
+      <div id="k-err" style="flex-basis:100%"></div>
+    </div>`, 'wide');
+}
+function kycSample(dealId) {
+  const x = dealById(dealId);
+  const slug = x.name.toLowerCase().replace(/[^a-z]+/g, '').slice(0, 14) || 'customer';
+  kycModal(dealId, window._kycPending, { ...MANUCHAR_KYC, legal: x.name + ' Ltd', cname: x.contact === 'Not set' ? 'Adaeze Okafor' : x.contact,
+    email: `ops@${slug}.com`, comm: 'General cargo', permits: 'No', permitsOk: 'Not applicable', docs: ['CAC certificate', 'TIN certificate', "Director's valid ID", 'Proof of address (utility bill)'] });
+  $('#k-confirm').checked = true;
+}
+function readKyc() {
+  const a = {};
+  KYC_Q.forEach(q => {
+    if (q.type === 'radio') a[q.id] = (document.querySelector(`input[name="k-${q.id}"]:checked`) || {}).value || '';
+    else if (q.type === 'checks') a[q.id] = [...document.querySelectorAll(`input[name="k-${q.id}"]:checked`)].map(i => i.value);
+    else a[q.id] = $(`#k-${q.id}`).value.trim();
+  });
+  return a;
+}
+function submitKyc(dealId) {
+  const a = readKyc();
+  document.querySelectorAll('.field.bad').forEach(f => f.classList.remove('bad'));
+  const missing = KYC_Q.filter(q => q.req && !a[q.id]);
+  if (a.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a.email)) missing.push(KYC_Q.find(q => q.id === 'email'));
+  missing.forEach(q => $(`[data-q="${q.id}"]`).classList.add('bad'));
+  const ok = $('#k-confirm').checked;
+  $('#k-confirm-wrap').classList.toggle('bad', !ok);
+  if (missing.length || !ok) {
+    $('#k-err').innerHTML = `<p class="err" style="margin:0">${missing.length ? `Answer the ${missing.length} highlighted question${missing.length === 1 ? '' : 's'}${ok ? '' : ' and tick the confirmation'}.` : 'Tick the confirmation to submit.'}</p>`;
+    if (missing.length) $(`[data-q="${missing[0].id}"]`).scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return;
+  }
+  const x = dealById(dealId);
+  kyc[dealId] = { a, by: 'NM', at: nowIso() };
+  const res = kycResult(a), flags = kycFlags(a);
+  addHistory(dealId, { t: 'KYC questionnaire completed', tag: `KYC: ${res}`, comment: flags.length ? flags.join('. ') + '.' : undefined });
+  const p = window._kycPending;
+  if (p) {
+    const before = stageLabel(x.stage);
+    Object.assign(x, { name: p.name, amount: p.amount, cls: p.cls, stage: 'qualified' });
+    addHistory(dealId, { t: `Moved deal from ${before} to Qualified`, tag: 'Qualified', comment: p.comment });
+  }
+  window._kycPending = null;
+  closeModal(); toast(p ? `KYC ${res.toLowerCase()} · deal moved to Qualified` : 'KYC saved'); render();
+}
+function kycPanel(x) {
+  const k = kyc[x.id];
+  if (!k) {
+    if (!['qualified', 'quote'].includes(x.stage) || x.outcome) return '';
+    return `<div class="panel"><p class="sec-t">KYC checks</p>
+      <div class="empty-box">KYC has not been completed for this deal.<br><button class="btn sm primary" onclick="kycModal('${x.id}')">Complete KYC</button></div></div>`;
+  }
+  const a = k.a, res = kycResult(a), flags = kycFlags(a);
+  const show = v => Array.isArray(v) ? (v.length ? v.join(', ') : 'None') : (v || '—');
+  return `<div class="panel">
+    <div class="lk-head" style="margin-bottom:20px"><p class="sec-t" style="margin:0">KYC checks</p>
+      <div style="display:flex;gap:8px;align-items:center"><span class="pill ${res === 'Passed' ? 'pass' : 'await'}">${res === 'Passed' ? ICON.check + ' ' : ''}${res}</span><button class="btn sm" onclick="kycModal('${x.id}')">Update</button></div></div>
+    <div class="kyc-meta">Completed by ${OWNERS[k.by].name} · ${longD(k.at)} · ${time(k.at)}</div>
+    ${flags.length ? `<ul class="flags">${flags.map(f => `<li>${ICON.warn}${esc(f)}</li>`).join('')}</ul>` : ''}
+    <div class="kv">
+      <div><div class="k">RC number</div><div class="v">${esc(a.rc)}</div></div>
+      <div><div class="k">TIN</div><div class="v">${esc(a.tin)}</div></div>
+      <div><div class="k">Business type</div><div class="v">${esc(show(a.type))}</div></div>
+      <div><div class="k">Trade direction</div><div class="v">${esc(a.dir)}</div></div>
+      <div><div class="k">Payment terms</div><div class="v">${esc(a.terms)}</div></div>
+      <div><div class="k">Documents received</div><div class="v">${(a.docs || []).length} of 5</div></div>
+    </div>
+    <details class="kyc-all"><summary>View all answers</summary>
+      <dl>${KYC_Q.map(q => `<dt>${esc(q.l)}</dt><dd>${esc(show(a[q.id]))}</dd>`).join('')}</dl>
+    </details>
+  </div>`;
+}
+
 let seq = 23;
 function newDealModal() {
   modal(`<h3>New deal</h3><p class="lead">Starts in Prospect. ID: OP-26-11-0${seq}</p>

@@ -11,3 +11,7 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
 - `Q-26-11-017` (raised from `RFQ-26-11-015`) is linked to the Quote Issued deal `OP-26-11-024`.
 - RFQ and quote pages follow the live OnePort365 RFQ and Quotes screens.
 - A deal can only move to Quote Issued once a quote has been issued (and auto-linked) for it.
+- Moving a deal into Qualified (from Prospect or Contacted) opens a KYC questionnaire: company details,
+  contact, trade profile, compliance (permits, dangerous goods, sanctions, PEP), payment terms and documents.
+  The stage only changes once it is submitted. The result (Passed / Needs review, with the reasons) shows
+  on the deal page under "KYC checks".
