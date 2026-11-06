@@ -80,6 +80,7 @@ button { cursor: pointer; }
 .btn.dark { background: var(--rail); border-color: var(--rail); color: #fff; }
 .btn.sm { height: 32px; padding: 0 12px; font-size: 13px; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
+a.btn { text-decoration: none; color: var(--ink); }
 .count { font-size: 12.5px; color: var(--ink-2); margin-bottom: 10px; }
 
 /* board */
@@ -357,6 +358,7 @@ const OWNERS = {
   BC: { name: 'Biggie Cole', color: '#8a9a8c', title: 'Sales Executive' },
   CE: { name: 'Chinedu Enworom', color: '#4f6455', title: 'Sales Executive' },
   KA: { name: 'Kayode Akintade', color: '#123b20', title: 'Sales Executive' },
+  SYS: { name: 'OnePort365 system', color: '#7a8278', title: 'Automatic' },
 };
 const STAGES = [
   { key: 'prospect', label: 'Prospect' },
@@ -404,24 +406,6 @@ const rfqs = {
     containers: [{ cls: 'FAK', commodity: 'Chemical', size: '20 FT', type: 'Dry', count: 3, weight: 28 }],
     quotes: ['Q-26-11-017'],
   },
-  'RFQ-26-11-012': {
-    id: 'RFQ-26-11-012', status: 'New', quoteStatus: 'Not started', created: '2026-11-03T14:40', dealId: null,
-    service: 'Air Freight', customer: 'Cybele cosmetics', contact: 'Funmi Adeyemi', email: '—',
-    origin: 'Paris (CDG) France', destination: 'Lagos (LOS) Nigeria', routeShort: 'Paris, France → Lagos, Nigeria',
-    goodsValue: 'USD 85,000', bl: '—', branch: 'Lagos', source: 'Website', incoterm: 'EXW', owner: 'GO', documents: '—',
-    notes: 'Skincare products, 6 pallets.',
-    containers: [{ cls: 'General', commodity: 'Skincare products', size: '—', type: 'Pallet', count: 6, weight: 1150 }],
-    quotes: [],
-  },
-  'RFQ-26-11-014': {
-    id: 'RFQ-26-11-014', status: 'New', quoteStatus: 'Not started', created: '2026-11-04T08:20', dealId: null,
-    service: 'Ocean Freight FCL', customer: 'Premium agro', contact: 'Sani Musa', email: '—',
-    origin: 'Onne (NGONN) Nigeria', destination: 'Valencia (ESVLC) Spain', routeShort: 'Onne, Nigeria → Valencia, Spain',
-    goodsValue: 'USD 120,000', bl: '—', branch: 'Port Harcourt', source: 'Sales', incoterm: 'FOB', owner: 'GO', documents: '—',
-    notes: 'Dried hibiscus flowers.',
-    containers: [{ cls: 'FAK', commodity: 'Dried hibiscus', size: '40 FT HC', type: 'Dry', count: 1, weight: 14000 }],
-    quotes: [],
-  },
 };
 
 const quotes = {
@@ -443,13 +427,13 @@ const QUOTE_LIST = [
 
 const history = {
   'DL-26-11-023': [
-    { t: 'Linked RFQ-26-11-015 to this deal', by: 'KA', at: '2026-11-05T11:25', tag: 'RFQ linked', tagCls: 'link', comment: 'Request for permit to clear, 3 x 20ft chemical.' },
+    { t: 'RFQ-26-11-015 raised and linked to this deal', by: 'SYS', at: '2026-11-05T11:20', tag: 'Auto-linked', tagCls: 'link', comment: 'Request for permit to clear, 3 x 20ft chemical.' },
     { t: 'Moved deal from Contacted to Qualified', by: 'KA', at: '2026-11-04T16:10', tag: 'Qualified', comment: 'Customer has approved for payment.' },
     { t: 'Moved deal from Prospect to Contacted', by: 'KA', at: '2026-11-03T12:30', tag: 'Contacted' },
   ],
   'DL-26-11-024': [
     { t: 'Moved deal from Qualified to Quote Issued', by: 'KA', at: '2026-11-06T10:12', tag: 'Quote Issued', comment: 'Q-26-11-017 sent to Ekene. Valid for 7 days.' },
-    { t: 'Linked Q-26-11-017 to this deal', by: 'KA', at: '2026-11-06T10:08', tag: 'Quote linked', tagCls: 'link', comment: 'Quote raised from RFQ-26-11-015.' },
+    { t: 'Q-26-11-017 issued and linked to this deal', by: 'SYS', at: '2026-11-06T10:05', tag: 'Auto-linked', tagCls: 'link', comment: 'Quote raised from RFQ-26-11-015.' },
     { t: 'Moved deal from Prospect to Qualified', by: 'KA', at: '2026-11-04T15:00', tag: 'Qualified' },
   ],
   'DL-26-10-013': [
@@ -678,8 +662,8 @@ function linkedPanel(x) {
   const direct = (x.quotes || []).filter(q => !underRfq.has(q)).map(q => quotes[q]);
   const qs = dealQuotes(x);
   let callout = '';
-  if (x.stage === 'qualified' && !rs.length) callout = `<div class="callout">${ICON.warn}<span>Qualified deals should have an RFQ. Link the customer's RFQ so quotes can follow it.</span></div>`;
-  if (x.stage === 'quote' && !qs.length) callout = `<div class="callout">${ICON.warn}<span>This deal is in Quote Issued but no quote is linked yet. Link the RFQ that holds the issued quote.</span></div>`;
+  if (x.stage === 'qualified' && !rs.length) callout = `<div class="callout">${ICON.warn}<span>No RFQ yet. When an RFQ is raised for this deal, the system links it here automatically.</span></div>`;
+  if (x.stage === 'quote' && !qs.length) callout = `<div class="callout">${ICON.warn}<span>No quote yet. When a quote is issued for this deal, the system links it here automatically.</span></div>`;
   const tree = rs.map(r => `<div class="node rfq">
       <div class="node-row"><span class="ic">${ICON.rfq}</span>
         <div class="tx">${idLink(r.id)} &nbsp;${rfqPill(r)}<div>${esc(r.routeShort)} · ${esc(r.service)}</div></div>
@@ -688,10 +672,10 @@ function linkedPanel(x) {
     </div>`).join('') + direct.map(q => quoteNode(q, true)).join('');
   const nR = rs.length, nQ = qs.length;
   return `<div class="panel">
-    <div class="lk-head"><p class="sec-t">Linked RFQs, quotes &amp; shipments</p><button class="btn sm" onclick="linkRfqModal('${x.id}')">+ Link RFQ</button></div>
+    <div class="lk-head"><p class="sec-t">Linked RFQs, quotes &amp; shipments</p><span class="tag">Linked automatically</span></div>
     <div class="lk-sum tnum">${nR} RFQ${nR === 1 ? '' : 's'} · ${nQ} quote${nQ === 1 ? '' : 's'} · 0 shipments</div>
     ${callout}
-    ${tree ? `<div class="tree">${tree}</div>` : `<div class="empty-box">No RFQ linked to this deal yet.<br>One deal can hold several RFQs, and each RFQ can hold several quotes.<br><button class="btn sm primary" onclick="linkRfqModal('${x.id}')">+ Link RFQ</button></div>`}
+    ${tree ? `<div class="tree">${tree}</div>` : `<div class="empty-box">No RFQs or quotes yet.<br>RFQs raised for this deal, and the quotes and shipments that follow, appear here automatically.</div>`}
   </div>`;
 }
 
@@ -728,7 +712,7 @@ function rfqView(r) {
     <div class="stack">
       <div class="panel">
         <p class="sec-t">Linked deal</p>
-        ${r.dealId ? dealLinkCard(r.dealId) : `<div class="empty-box">This RFQ is not linked to a deal.<br><button class="btn sm primary" onclick="linkDealModal('${r.id}')">Link to deal</button></div>`}
+        ${r.dealId ? dealLinkCard(r.dealId) : `<div class="empty-box">No deal yet. The system links this RFQ to its deal automatically.</div>`}
       </div>
       <div class="panel">
         <div class="lk-head" style="margin-bottom:16px"><p class="sec-t">Quotes on this RFQ</p><button class="btn sm" onclick="toast('Quote builder is outside this prototype')">+ Create quote</button></div>
@@ -799,27 +783,6 @@ function modal(html) { $('#modal-root').innerHTML = `<div class="scrim" onclick=
 function closeModal() { $('#modal-root').innerHTML = ''; }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-function linkRfqModal(dealId) {
-  const dl = dealById(dealId);
-  const avail = Object.values(rfqs).filter(r => !r.dealId);
-  modal(`<h3>Link RFQ to ${esc(dl.name)}</h3><p class="lead">${dl.id} · RFQs not yet linked to any deal</p>
-    ${avail.length ? `<div class="opts">${avail.map((r, i) => `<label class="opt"><input type="radio" name="rfq" value="${r.id}" ${i ? '' : 'checked'}><div><b>${r.id}</b> · ${esc(r.customer)}<div>${esc(r.routeShort)} · ${esc(r.service)}</div></div></label>`).join('')}</div>`
-      : '<div class="empty-box" style="margin-bottom:16px">Every RFQ is already linked to a deal.</div>'}
-    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" ${avail.length ? '' : 'disabled'} onclick="doLink('${dealId}', document.querySelector('input[name=rfq]:checked').value)">Link RFQ</button></div>`);
-}
-function linkDealModal(rfqId) {
-  const open = deals.filter(x => x.stage !== 'closed');
-  modal(`<h3>Link ${rfqId} to a deal</h3><p class="lead">Pick the open deal this request belongs to</p>
-    <div class="field"><label for="ld">Deal</label><select id="ld">${open.map(x => `<option value="${x.id}">${x.id} · ${esc(x.name)} (${stageLabel(x.stage)})</option>`).join('')}</select></div>
-    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" onclick="doLink(document.getElementById('ld').value, '${rfqId}')">Link</button></div>`);
-}
-function doLink(dealId, rfqId) {
-  const dl = dealById(dealId);
-  (dl.rfqs = dl.rfqs || []).push(rfqId);
-  rfqs[rfqId].dealId = dealId;
-  addHistory(dealId, { t: `Linked ${rfqId} to this deal`, tag: 'RFQ linked', tagCls: 'link' });
-  closeModal(); toast(`${rfqId} linked to ${dealId}`); render();
-}
 function activityModal(dealId) {
   modal(`<h3>Add activity</h3><p class="lead">${dealId}</p>
     <div class="field"><label for="a-type">Activity</label><select id="a-type"><option>Call</option><option>Email</option><option>Meeting</option><option>Note</option></select></div>
@@ -845,8 +808,8 @@ function editDealModal(dealId) {
     <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" onclick="saveDeal('${x.id}')">Save changes</button></div>`);
   const chk = () => {
     const s = $('#e-s').value, hasR = (x.rfqs || []).length, hasQ = dealQuotes(x).length;
-    $('#e-err').innerHTML = s === 'quote' && !hasQ ? `<p class="err">Link an RFQ with an issued quote before moving this deal to Quote Issued.</p>`
-      : s === 'qualified' && !hasR ? `<div class="callout">${ICON.warn}<span>No RFQ is linked yet. You can link one after saving.</span></div>` : '';
+    $('#e-err').innerHTML = s === 'quote' && !hasQ ? `<p class="err">This deal can move to Quote Issued once a quote has been issued for it. The quote is linked automatically.</p>`
+      : s === 'qualified' && !hasR ? `<div class="callout">${ICON.warn}<span>No RFQ yet. It will appear on the deal automatically once one is raised.</span></div>` : '';
   };
   $('#e-s').addEventListener('change', chk); chk();
 }
