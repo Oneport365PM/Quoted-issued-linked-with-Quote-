@@ -629,11 +629,11 @@ function dealView(x) {
           <div><div class="k">Date created</div><div class="v tnum">${slash(x.created)}</div></div>
           <div><div class="k">Product</div><div class="v">${esc(x.product)}</div></div>
           <div><div class="k">Class</div><div class="v"><span class="cls ${x.cls}" style="font-size:12px;padding:4px 12px">${x.cls}</span></div></div>
-          <div class="full"><div class="k">Sales owner</div><div class="so"><span class="av">${x.owner}</span><div><b>${o.name}</b><small>${o.title}</small></div></div></div>
+          <div class="${linkedField(x) ? '' : 'full'}"><div class="k">Sales owner</div><div class="so"><span class="av">${x.owner}</span><div><b>${o.name}</b><small>${o.title}</small></div></div></div>
+          ${linkedField(x)}
           <div class="full"><div class="k">Note</div><div class="note">${esc(x.note || 'No notes on this deal yet.')}</div></div>
         </div>
       </div>
-      ${linkedPanel(x)}
     </div>
     <div class="panel">
       <div class="lk-head" style="margin-bottom:20px"><p class="sec-t">Deal history</p><button class="btn primary" onclick="activityModal('${x.id}')">+ Add Activity</button></div>
@@ -647,33 +647,11 @@ function dealView(x) {
 }
 function rfqPill(r) { return `<span class="pill ${r.status === 'Quoted' ? 'quoted' : r.status === 'New' ? 'new' : 'quoting'}">${r.status}</span>`; }
 function quotePill(status) { return `<span class="pill ${status === 'Ready' ? 'ready' : 'await'}">${status}</span>`; }
-function quoteNode(q, showRfq) {
-  return `<div class="node quote">
-    <div class="node-row"><span class="ic">${ICON.quote}</span>
-      <div class="tx">${idLink(q.id)} &nbsp;${quotePill(q.status)}<div>Issued ${longD(q.issued)} · valid for ${q.validDays} days</div></div>
-      <span class="amt tnum">${qMoney(q, quoteTotal(q))}</span>
-      <a class="btn sm" href="#${q.id.toLowerCase()}">Open quote ${ICON.go}</a></div>
-    <div class="kids"><div class="empty-kid">No shipment yet. A shipment is created when the customer accepts this quote.</div></div>
-  </div>`;
-}
-function linkedPanel(x) {
-  const rs = dealRfqs(x).map(r => rfqs[r]);
-  const qs = dealQuotes(x);
-  let callout = '';
-  if (x.stage === 'qualified' && !rs.length) callout = `<div class="callout">${ICON.warn}<span>No RFQ yet. When an RFQ is raised for this deal, the system links it here automatically.</span></div>`;
-  if (x.stage === 'quote' && !qs.length) callout = `<div class="callout">${ICON.warn}<span>No quote yet. When a quote is issued for this deal, the system links it here automatically.</span></div>`;
-  const tree = rs.map(r => `<div class="node rfq">
-      <div class="node-row"><span class="ic">${ICON.rfq}</span>
-        <div class="tx">${idLink(r.id)} &nbsp;${rfqPill(r)}<div>${esc(r.routeShort)} · ${esc(r.service)}</div></div>
-        <a class="btn sm" href="#${r.id.toLowerCase()}">Open RFQ ${ICON.go}</a></div>
-    </div>`).join('') + qs.map(q => quoteNode(quotes[q])).join('');
-  const nR = rs.length, nQ = qs.length;
-  return `<div class="panel">
-    <div class="lk-head"><p class="sec-t">${x.stage === 'qualified' ? 'Linked RFQ' : x.stage === 'quote' ? 'Linked quote' : 'Linked RFQs, quotes &amp; shipments'}</p><span class="tag">Linked automatically</span></div>
-    <div class="lk-sum">${x.stage === 'qualified' ? 'RFQs are tied to the deal at the Qualified stage.' : x.stage === 'quote' ? 'Quotes are tied to the deal at the Quote Issued stage.' : `${nR} RFQ${nR === 1 ? '' : 's'} · ${nQ} quote${nQ === 1 ? '' : 's'}`}</div>
-    ${callout}
-    ${tree ? `<div class="tree">${tree}</div>` : callout ? '' : `<div class="empty-box">Nothing linked at this stage.<br>The system ties an RFQ to the deal at Qualified, and a quote at Quote Issued.</div>`}
-  </div>`;
+function linkedField(x) {
+  const rs = dealRfqs(x), qs = dealQuotes(x);
+  if (rs.length) return `<div><div class="k">RFQ</div><div class="v">${rs.map(idLink).join(', ')}</div></div>`;
+  if (qs.length) return `<div><div class="k">Quote</div><div class="v">${qs.map(idLink).join(', ')}</div></div>`;
+  return '';
 }
 
 /* ---------- RFQ ---------- */
