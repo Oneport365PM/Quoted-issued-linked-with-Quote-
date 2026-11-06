@@ -93,6 +93,10 @@ a.btn { text-decoration: none; color: var(--ink); }
 .col-h .m { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
 .cards { display: flex; flex-direction: column; gap: 12px; }
 .card { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0; box-shadow: 0 1px 2px rgba(16,40,20,.05); width: 100%; transition: box-shadow .15s, border-color .15s; }
+.col { border-radius: 12px; transition: background .15s, box-shadow .15s; }
+.col.over { background: #eef6e2; box-shadow: 0 0 0 2px var(--lime) inset; }
+.card[draggable="true"] { cursor: grab; }
+.card.dragging { opacity: .45; }
 .card:hover { border-color: #cfd8c8; box-shadow: 0 4px 14px rgba(16,40,20,.08); }
 .card .top { padding: 12px 14px 12px; border-bottom: 1px solid var(--line); }
 .card .did { font-size: 11px; color: var(--muted); letter-spacing: .3px; margin-bottom: 4px; }
@@ -628,7 +632,7 @@ function boardHtml(list) {
     const meta = s.key === 'closed'
       ? `${items.filter(x => x.outcome === 'won').length} won · ${items.filter(x => x.outcome === 'lost').length} lost`
       : `${items.length} · ${money(items.reduce((a, x) => a + x.amount, 0))}`;
-    return `<section>
+    return `<section class="col" data-stage="${s.key}">
       <div class="col-h"><div class="t"><span class="n ${s.key === 'closed' ? 'dk' : ''}">${i + 1}</span>${s.label}</div><div class="m tnum">${meta}</div></div>
       <div class="cards">${items.map(cardHtml).join('') || '<div class="empty-box">No deals here</div>'}</div>
     </section>`;
@@ -636,7 +640,7 @@ function boardHtml(list) {
 }
 function cardHtml(x) {
   const chips = linkChips(x);
-  return `<div class="card" role="button" tabindex="0" data-go="${x.id.toLowerCase()}">
+  return `<div class="card" role="button" tabindex="0" draggable="true" data-id="${x.id}" data-go="${x.id.toLowerCase()}">
     <div class="top">
       <div class="did">${x.id}</div>
       <div class="row1"><span class="nm">${esc(x.name)}</span><span class="amt tnum">${money(x.amount)}</span></div>
@@ -658,6 +662,41 @@ function listHtml(list) {
       <td><div style="display:flex;gap:6px">${linkChips(x) || '<span style="color:var(--muted)">None</span>'}</div></td>
       <td class="tnum">${dmy(x.created)}</td></tr>`).join('')}</tbody></table></div>`;
 }
+/* Drag a card to another column. Entering Qualified for the first time runs the KYC checklist first. */
+function moveDeal(id, target) {
+  const x = dealById(id);
+  if (!x || target === x.stage) return;
+  if (target === 'closed') return closeDealModal(id);
+  if (target === 'quote' && !dealQuotes(x).length) return toast('This deal moves to Quote Issued once a quote has been issued for it');
+  if (needsKyc(x, target)) return kycModal(id, { name: x.name, amount: x.amount, cls: x.cls, stage: target });
+  applyStage(x, target);
+  toast(`${x.name} moved to ${stageLabel(target)}`); render();
+}
+function stageName(x) { return x.outcome ? (x.outcome === 'won' ? 'Won' : 'Lost') : stageLabel(x.stage); }
+function applyStage(x, target, comment) {
+  const before = stageName(x);
+  if (target === 'won' || target === 'lost') {
+    x.stage = 'closed'; x.outcome = target;
+    addHistory(x.id, { t: `Deal marked ${target === 'won' ? 'Won' : 'Lost'}`, tag: target === 'won' ? 'Won' : 'Lost', tagCls: target === 'won' ? 'won' : '', comment });
+  } else {
+    x.stage = target; delete x.outcome;
+    addHistory(x.id, { t: `Moved deal from ${before} to ${stageLabel(target)}`, tag: stageLabel(target), comment });
+  }
+}
+function closeDealModal(id) {
+  const x = dealById(id);
+  modal(`<h3>Close ${esc(x.name)}</h3><p class="lead">${x.id} · How did this deal end?</p>
+    <div class="opts"><label class="opt"><input type="radio" name="cl" value="won" checked><div><b>Won</b><div>The customer accepted and is shipping with us</div></div></label>
+    <label class="opt"><input type="radio" name="cl" value="lost"><div><b>Lost</b><div>The customer went elsewhere or dropped the request</div></div></label></div>
+    <div class="field"><label for="cl-c">Comment</label><input id="cl-c" placeholder="Optional"></div>
+    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" onclick="doClose('${id}')">Close deal</button></div>`);
+}
+function doClose(id) {
+  const x = dealById(id), out = document.querySelector('input[name=cl]:checked').value;
+  if (out === 'won' && needsKyc(x, 'won')) return kycModal(id, { name: x.name, amount: x.amount, cls: x.cls, stage: 'won', comment: $('#cl-c').value.trim() || undefined });
+  applyStage(x, out, $('#cl-c').value.trim() || undefined);
+  closeModal(); toast(`${x.name} marked ${out === 'won' ? 'Won' : 'Lost'}`); render();
+}
 function bindPipeline() {
   const q = $('#q');
   q.addEventListener('input', () => { ui.q = q.value; const pos = q.selectionStart; render(); const n = $('#q'); n.focus(); n.setSelectionRange(pos, pos); });
@@ -666,7 +705,16 @@ function bindPipeline() {
   $('#v-list').onclick = () => { ui.view = 'list'; render(); };
   $('#new-deal').onclick = newDealModal;
   document.querySelectorAll('[data-soon]').forEach(b => b.onclick = () => toast('Companies and Contacts are outside this prototype'));
-  document.querySelectorAll('.card').forEach(c => c.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target === c) go(c.dataset.go); }));
+  document.querySelectorAll('.card').forEach(c => {
+    c.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target === c) go(c.dataset.go); });
+    c.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', c.dataset.id); e.dataTransfer.effectAllowed = 'move'; c.classList.add('dragging'); });
+    c.addEventListener('dragend', () => { c.classList.remove('dragging'); document.querySelectorAll('.col.over').forEach(x => x.classList.remove('over')); });
+  });
+  document.querySelectorAll('.col').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; col.classList.add('over'); });
+    col.addEventListener('dragleave', e => { if (!col.contains(e.relatedTarget)) col.classList.remove('over'); });
+    col.addEventListener('drop', e => { e.preventDefault(); col.classList.remove('over'); moveDeal(e.dataTransfer.getData('text/plain'), col.dataset.stage); });
+  });
 }
 
 /* ---------- deal ---------- */
@@ -863,7 +911,7 @@ function saveDeal(dealId) {
   const s = $('#e-s').value;
   if (s === 'quote' && !dealQuotes(x).length) return;
   if (needsKyc(x, s)) {
-    const pending = { name: $('#e-n').value.trim() || x.name, amount: Math.max(0, +$('#e-a').value || 0), cls: $('#e-c').value, comment: $('#e-cm').value.trim() || undefined };
+    const pending = { name: $('#e-n').value.trim() || x.name, amount: Math.max(0, +$('#e-a').value || 0), cls: $('#e-c').value, comment: $('#e-cm').value.trim() || undefined, stage: s };
     return kycModal(x.id, pending);
   }
   const before = x.outcome ? (x.outcome === 'won' ? 'Won' : 'Lost') : stageLabel(x.stage);
@@ -927,7 +975,7 @@ function kycModal(dealId, pending, prefill, startStep = 0) {
   window._kycPending = pending || null;
   const moving = !!pending, n = KYC_SECTIONS.length;
   modal(`<div class="mh"><h3>KYC checks · ${esc(x.name)}</h3>
-      <p class="lead">${x.id} · ${moving ? 'Answer each step to move the deal to Qualified.' : 'Update the KYC answers for this deal.'} Tick the answers that apply, then press Next.</p>
+      <p class="lead">${x.id} · ${moving ? `Answer each step to move the deal to ${kycTarget()}.` : 'Update the KYC answers for this deal.'} Tick the answers that apply, then press Next.</p>
       <div class="kprog" aria-hidden="true">${KYC_SECTIONS.map((_, i) => `<span data-p="${i}"></span>`).join('')}</div>
       <div class="kstep-l" id="k-stepl"></div></div>
     <div class="mb">${KYC_SECTIONS.map((sec, i) => `<div class="kyc-sec" data-step="${i}" hidden><h4><span>${i + 1}</span>${sec.t}</h4>${sec.q.map(q => kycField(q, a)).join('')}
@@ -942,6 +990,7 @@ function kycModal(dealId, pending, prefill, startStep = 0) {
   kycShow(startStep);
 }
 let kycStep = 0;
+const kycTarget = () => { const t = (window._kycPending || {}).stage || 'qualified'; return t === 'won' ? 'Closed · Won' : stageLabel(t); };
 function kycShow(i) {
   const n = KYC_SECTIONS.length;
   kycStep = i;
@@ -949,7 +998,7 @@ function kycShow(i) {
   document.querySelectorAll('[data-p]').forEach(el => el.className = +el.dataset.p < i ? 'done' : +el.dataset.p === i ? 'on' : '');
   $('#k-stepl').textContent = `Step ${i + 1} of ${n} · ${KYC_SECTIONS[i].t}`;
   $('#k-back').textContent = i === 0 ? 'Cancel' : 'Back';
-  $('#k-next').textContent = i < n - 1 ? 'Next' : (window._kycMoving ? 'Submit KYC and move to Qualified' : 'Save KYC');
+  $('#k-next').textContent = i < n - 1 ? 'Next' : (window._kycMoving ? `Submit KYC and move to ${kycTarget()}` : 'Save KYC');
   $('#k-err').innerHTML = '';
   $('.modal.wide').scrollTop = 0;
   const first = $(`[data-step="${i}"] input`); if (first) first.focus();
@@ -983,13 +1032,10 @@ function submitKyc(dealId) {
   const res = kycResult(a), flags = kycFlags(a);
   addHistory(dealId, { t: 'KYC questionnaire completed', tag: `KYC: ${res}`, comment: flags.length ? flags.join('. ') + '.' : undefined });
   const p = window._kycPending;
-  if (p) {
-    const before = stageLabel(x.stage);
-    Object.assign(x, { name: p.name, amount: p.amount, cls: p.cls, stage: 'qualified' });
-    addHistory(dealId, { t: `Moved deal from ${before} to Qualified`, tag: 'Qualified', comment: p.comment });
-  }
+  const tgt = p ? (p.stage || 'qualified') : null;
+  if (p) { Object.assign(x, { name: p.name, amount: p.amount, cls: p.cls }); applyStage(x, tgt, p.comment); }
   window._kycPending = null;
-  closeModal(); toast(p ? `KYC ${res.toLowerCase()} · deal moved to Qualified` : 'KYC saved'); render();
+  closeModal(); toast(p ? `KYC ${res.toLowerCase()} · deal moved to ${tgt === 'won' ? 'Closed · Won' : stageLabel(tgt)}` : 'KYC saved'); render();
 }
 function kycPanel(x) {
   const k = kyc[x.id];
