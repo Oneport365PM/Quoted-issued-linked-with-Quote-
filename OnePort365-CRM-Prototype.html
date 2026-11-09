@@ -1,0 +1,1089 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}img{max-width:100%}</style>
+<title>OnePort CRM Deals</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: fixed dark-green rail + top bar, content area switches between pipeline board, deal, RFQ and quote views.
+   Single light look on purpose: it mirrors the live OnePort CRM screens. */
+:root {
+  color-scheme: light;
+  --rail: #0d3b1d;
+  --ink: #12301d;
+  --ink-2: #3c4a40;
+  --muted: #7a8278;
+  --bg: #f5f5f1;
+  --surface: #ffffff;
+  --surface-2: #f6f6f2;
+  --line: #e6e7e0;
+  --lime: #c6f04d;
+  --lime-soft: #edf8d6;
+  --lime-ink: #2f6a12;
+  --gold: #c99a06;
+  --green: #1f7a32;
+  --green-soft: #e4f4e3;
+  --red: #b4322a;
+  --red-soft: #fbe9e7;
+  --amber: #9a6a00;
+  --amber-soft: #fff3d6;
+  --blue: #22579a;
+  --blue-soft: #e5eefb;
+  --font: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--ink); font-size: 14px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+.app { display: flex; min-height: 100%; }
+.rail { width: 70px; flex: none; background: var(--rail); display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 26px 0 20px; position: sticky; top: 0; height: 100vh; }
+.rail .home { width: 40px; height: 40px; border-radius: 10px; background: #f3b81c; display: grid; place-items: center; margin-bottom: 14px; }
+.rail .ico { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; color: #dfe9df; }
+.rail .ico.on { background: rgba(255,255,255,.09); }
+.rail .me { margin-top: auto; width: 34px; height: 34px; border-radius: 50%; background: #3aa34c; color: #fff; font-size: 12px; font-weight: 600; display: grid; place-items: center; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar { background: var(--surface); display: flex; align-items: center; gap: 12px; padding-block: 18px; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--line); }
+.topbar .crm-pill { background: var(--rail); color: #fff; font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 8px; }
+.topbar h1 { font-size: 15px; margin: 0; font-weight: 700; }
+.wordmark { margin-left: auto; font-weight: 600; color: var(--rail); font-size: 18px; letter-spacing: -.2px; }
+.wordmark b { font-weight: 800; }
+.content { padding-block: 24px 48px; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); min-width: 0; }
+
+/* tabs */
+.tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; }
+.tab { background: none; border: 0; padding: 12px 16px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab.on { color: var(--ink); font-weight: 500; border-bottom-color: var(--rail); }
+
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 18px 16px; position: relative; }
+.stat.hl { background: #eef5e6; }
+.stat .lbl { font-size: 13px; color: var(--ink-2); }
+.stat .val { font-size: 24px; font-weight: 700; margin: 14px 0 4px; }
+.stat .val.gold { color: var(--gold); }
+.stat .sub { font-size: 12.5px; color: var(--ink-2); }
+.stat .badge-ico { position: absolute; right: 16px; top: 16px; width: 28px; height: 28px; border-radius: 7px; background: var(--lime-soft); display: grid; place-items: center; color: var(--lime-ink); }
+
+/* toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+.search { flex: 1 1 280px; display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; height: 40px; min-width: 0; }
+.search input { border: 0; outline: 0; flex: 1; min-width: 0; background: transparent; }
+.sel { height: 40px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 0 12px; min-width: 150px; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: none; padding: 0 16px; height: 38px; }
+.seg button.on { background: var(--rail); color: #fff; font-weight: 600; }
+.btn { height: 40px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); display: inline-flex; align-items: center; gap: 8px; font-weight: 500; white-space: nowrap; }
+.btn.primary { background: var(--lime); border-color: var(--lime); color: var(--rail); font-weight: 600; }
+.btn.dark { background: var(--rail); border-color: var(--rail); color: #fff; }
+.btn.sm { height: 32px; padding: 0 12px; font-size: 13px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+a.btn { text-decoration: none; color: var(--ink); }
+.count { font-size: 12.5px; color: var(--ink-2); margin-bottom: 10px; }
+
+/* board */
+.board-wrap { overflow-x: auto; padding-bottom: 6px; }
+.board { display: grid; grid-template-columns: repeat(5, minmax(250px, 1fr)); gap: 20px; min-width: 1310px; }
+.col-h { padding-bottom: 12px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.col-h .t { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14.5px; }
+.col-h .n { width: 20px; height: 20px; border-radius: 50%; background: var(--lime); font-size: 11px; display: grid; place-items: center; font-weight: 700; }
+.col-h .n.dk { background: var(--rail); color: #fff; }
+.col-h .m { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+.cards { display: flex; flex-direction: column; gap: 12px; }
+.card { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0; box-shadow: 0 1px 2px rgba(16,40,20,.05); width: 100%; transition: box-shadow .15s, border-color .15s; }
+.col { border-radius: 12px; transition: background .15s, box-shadow .15s; }
+.col.over { background: #eef6e2; box-shadow: 0 0 0 2px var(--lime) inset; }
+.card[draggable="true"] { cursor: grab; }
+.card.dragging { opacity: .45; }
+.card:hover { border-color: #cfd8c8; box-shadow: 0 4px 14px rgba(16,40,20,.08); }
+.card .top { padding: 12px 14px 12px; border-bottom: 1px solid var(--line); }
+.card .did { font-size: 11px; color: var(--muted); letter-spacing: .3px; margin-bottom: 4px; }
+.card .row1 { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.card .nm { font-weight: 600; font-size: 14px; }
+.card .amt { font-weight: 600; color: var(--gold); white-space: nowrap; }
+.card .row2 { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px; }
+.owner { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); min-width: 0; }
+.av { width: 24px; height: 24px; border-radius: 50%; color: #fff; font-size: 9.5px; font-weight: 600; display: grid; place-items: center; flex: none; }
+.card .bot { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 11.5px; color: var(--muted); flex-wrap: wrap; }
+.links { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 14px 12px; }
+
+.cls { font-size: 10.5px; border-radius: 999px; padding: 2px 9px; border: 1px solid; font-weight: 500; white-space: nowrap; }
+.cls.Growth { color: #c37a00; border-color: #f0c77a; background: #fffaf0; }
+.cls.SME { color: var(--ink-2); border-color: #c9cdc5; background: var(--surface-2); }
+.cls.Enterprise { color: var(--green); border-color: #9fd3a3; background: var(--green-soft); }
+.pill { font-size: 11.5px; border-radius: 6px; padding: 3px 9px; font-weight: 500; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.pill.won { background: var(--green-soft); color: var(--green); }
+.pill.lost { background: var(--red-soft); color: var(--red); }
+.pill.stage { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+.pill.quoting { background: var(--green-soft); color: var(--green); }
+.pill.issued { background: var(--blue-soft); color: var(--blue); }
+.pill.new { background: var(--amber-soft); color: var(--amber); }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; letter-spacing: .2px; }
+.chip.rfq { background: var(--lime-soft); color: var(--lime-ink); }
+.chip.quote { background: var(--blue-soft); color: var(--blue); }
+a.chip, button.chip { border: 0; text-decoration: none; }
+
+/* list */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+table { border-collapse: collapse; width: 100%; min-width: 900px; }
+th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 13px; white-space: nowrap; }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 600; background: var(--surface-2); }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: #fafbf7; }
+
+/* detail pages */
+.back { background: none; border: 0; color: var(--green); font-weight: 500; display: inline-flex; align-items: center; gap: 6px; padding: 4px 0; margin-bottom: 16px; }
+.back.grey { color: var(--ink-2); font-weight: 400; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; min-width: 0; }
+.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.head h2 { margin: 0 0 8px; font-size: 22px; font-weight: 700; text-wrap: balance; }
+.head .ids { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.idtag { font-size: 12px; font-weight: 600; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; letter-spacing: .3px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.stack { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.sec-t { font-size: 11.5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-2); margin: 0 0 20px; }
+.kv { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 24px; }
+.kv .k { font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--ink-2); margin-bottom: 6px; }
+.kv .v { font-size: 14.5px; }
+.kv .v.gold { color: var(--gold); font-weight: 600; }
+.kv .full { grid-column: 1 / -1; }
+.note { background: var(--surface-2); border-radius: 8px; padding: 16px 18px; min-height: 90px; color: var(--ink-2); }
+.so { display: flex; gap: 10px; align-items: center; }
+.so .av { width: 34px; height: 34px; border-radius: 8px; font-size: 12px; background: var(--rail) !important; color: var(--lime); }
+.so b { display: block; font-size: 13.5px; font-weight: 600; }
+.so small { font-size: 11.5px; color: var(--ink-2); }
+
+/* linked tree */
+.lk-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.lk-head .sec-t { margin: 0; }
+.lk-sum { font-size: 12.5px; color: var(--ink-2); margin-bottom: 18px; }
+.tree { display: flex; flex-direction: column; gap: 14px; }
+.node { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.node-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; flex-wrap: wrap; }
+.node-row .ic { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+.node.rfq > .node-row .ic { background: var(--lime-soft); color: var(--lime-ink); }
+.node.quote > .node-row .ic { background: var(--blue-soft); color: var(--blue); }
+.node.ship > .node-row .ic { background: var(--amber-soft); color: var(--amber); }
+.node-row .tx { flex: 1; min-width: 160px; }
+.node-row .tx b { font-size: 14px; letter-spacing: .2px; }
+.node-row .tx div { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+.node-row .amt { color: var(--gold); font-weight: 600; }
+.kids { margin: 0 14px 14px 30px; padding-left: 18px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.kids .node { position: relative; }
+.kids .node::before { content: ""; position: absolute; left: -20px; top: 27px; width: 18px; border-top: 2px solid var(--line); }
+.empty-kid { font-size: 12.5px; color: var(--muted); padding: 10px 2px; position: relative; }
+.empty-kid::before { content: ""; position: absolute; left: -20px; top: 20px; width: 14px; border-top: 2px dashed var(--line); }
+.empty-box { border: 1.5px dashed var(--line); border-radius: 10px; padding: 22px; text-align: center; color: var(--ink-2); font-size: 13px; }
+.empty-box .btn { margin-top: 12px; }
+.callout { display: flex; gap: 10px; align-items: flex-start; background: var(--amber-soft); color: #6b4a00; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; margin-bottom: 14px; }
+.callout.ok { background: var(--lime-soft); color: var(--lime-ink); }
+
+/* history */
+.hist { display: flex; flex-direction: column; }
+.ev { position: relative; padding: 0 0 22px 32px; }
+.ev::before { content: ""; position: absolute; left: 6px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: #c8dcb5; }
+.ev::after { content: ""; position: absolute; left: 9.5px; top: 20px; bottom: 4px; border-left: 1px dashed var(--line); }
+.ev:last-child::after { display: none; }
+.ev .r { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.ev b { font-size: 14px; font-weight: 600; }
+.ev .meta { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+.ev .cm { background: var(--surface-2); border-radius: 6px; padding: 9px 10px; margin-top: 10px; font-size: 13.5px; color: var(--ink-2); }
+.tag { font-size: 11px; border-radius: 6px; padding: 2px 8px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-2); white-space: nowrap; }
+.tag.won { background: var(--lime-soft); border-color: transparent; color: var(--lime-ink); font-weight: 600; }
+.tag.link { background: var(--blue-soft); border-color: transparent; color: var(--blue); font-weight: 600; }
+
+/* RFQ / quote */
+.rfq-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rfq-title h2 { margin: 0; font-size: 22px; letter-spacing: .3px; }
+.subt { color: var(--ink-2); margin-top: 4px; font-size: 13.5px; }
+.route { display: flex; align-items: center; gap: 14px; background: var(--surface-2); border-radius: 10px; padding: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+.route .pt { min-width: 0; }
+.route .pt small { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+.route .pt b { font-size: 15px; }
+.route .arrow { flex: 1; min-width: 40px; border-top: 2px dashed #c4ccc0; position: relative; }
+.linkcard { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); width: 100%; text-align: left; }
+.linkcard:hover { border-color: #cfd8c8; }
+.linkcard .tx { flex: 1; min-width: 0; }
+.linkcard .tx small { display: block; font-size: 11.5px; color: var(--muted); }
+.linkcard .tx b { font-size: 14px; }
+.qdoc-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 18px; }
+.qno { font-size: 20px; font-weight: 700; letter-spacing: .4px; }
+.lines td.r, .lines th.r { text-align: right; }
+.lines table { min-width: 520px; }
+.total { display: flex; justify-content: flex-end; gap: 30px; padding: 14px; font-size: 15px; }
+.total b { color: var(--gold); font-size: 18px; }
+
+/* modal */
+.scrim { position: fixed; inset: 0; background: rgba(10, 30, 16, .38); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); z-index: 50; }
+.modal { background: var(--surface); border-radius: 14px; width: min(520px, 100%); max-height: 100%; overflow: auto; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.modal h3 { margin: 0 0 4px; font-size: 18px; }
+.modal .lead { color: var(--ink-2); font-size: 13px; margin: 0 0 18px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.field input, .field select, .field textarea { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--surface); width: 100%; }
+.field textarea { min-height: 90px; resize: vertical; }
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.opts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.opt { display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 12px; cursor: pointer; }
+.opt:has(input:checked) { border-color: var(--green); background: #f6fbf1; }
+.opt input { margin-top: 3px; accent-color: var(--green); }
+.opt b { font-size: 13.5px; }
+.opt div div { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+.mfoot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+.err { color: var(--red); font-size: 12.5px; margin: -4px 0 12px; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--rail); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; z-index: 60; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+
+/* clickable record IDs */
+a.idlink { color: var(--green); font-weight: 600; text-decoration: underline; text-decoration-color: #a9d3ad; text-underline-offset: 3px; letter-spacing: .2px; }
+a.idlink:hover { text-decoration-color: var(--green); }
+a.chip { cursor: pointer; }
+a.chip:hover { filter: brightness(.96); text-decoration: underline; }
+.pill.quoted { background: var(--rail); color: #fff; font-weight: 600; }
+.pill.ready { background: var(--green-soft); color: var(--green); font-weight: 600; }
+.pill.await { background: var(--amber-soft); color: var(--amber); font-weight: 600; }
+
+/* RFQ page (mirrors live RFQ screen) */
+.rfq-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; min-width: 0; }
+.rfq-card .hd { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; padding: 22px 26px 20px; border-bottom: 1px solid var(--line); }
+.rfq-card .bd { padding: 24px 26px; }
+.f3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 24px; }
+.f4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px 20px; }
+.f3 .k, .f4 .k { font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--ink-2); margin-bottom: 6px; }
+.f3 .v, .f4 .v { font-size: 14.5px; overflow-wrap: anywhere; }
+.acc { border: 1px solid var(--line); border-radius: 10px; margin-top: 12px; }
+.acc summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; font-weight: 600; font-size: 14.5px; }
+.acc summary::-webkit-details-marker { display: none; }
+.acc[open] summary { border-bottom: 1px solid var(--line); }
+.acc[open] summary svg { transform: rotate(180deg); }
+.acc .in { padding: 20px 18px; }
+.h-sm { font-weight: 600; font-size: 15px; margin: 28px 0 0; }
+
+/* Quotes page (mirrors live Quotes screen) */
+.qwrap { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
+.qlist { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.qlist .qh { display: flex; align-items: center; gap: 8px; padding: 16px 16px 10px; }
+.qlist .qh span { font-size: 12px; letter-spacing: .8px; color: var(--ink-2); font-weight: 500; margin-right: auto; }
+.qtabs { display: flex; gap: 18px; padding: 0 16px; border-bottom: 1px solid var(--line); font-size: 12.5px; overflow-x: auto; }
+.qtabs span { padding: 10px 0; white-space: nowrap; color: var(--ink-2); }
+.qtabs span.on { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--rail); }
+.qlist .shw { font-size: 12px; color: var(--ink-2); padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.qi { display: block; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 14px 18px; border-left: 3px solid transparent; }
+.qi.on { background: #f1f9e6; border-left-color: #7cc04a; }
+.qi .a { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.qi .a b { font-size: 14px; letter-spacing: .3px; white-space: nowrap; }
+.qi .a .pill { white-space: normal; text-align: right; }
+.qi .c { font-size: 14px; margin-top: 6px; }
+.qi .s { font-size: 11.5px; font-weight: 600; margin-top: 2px; }
+.qi .r { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.qmain { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; min-width: 0; overflow: hidden; }
+.qbar { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.qbar .ttl { flex: 1; min-width: 200px; }
+.qbar .ttl b { font-size: 16px; letter-spacing: .3px; }
+.qbar .ttl span { color: var(--ink-2); font-size: 13.5px; margin-left: 8px; }
+.qbar select { height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; min-width: 170px; background: var(--surface); }
+.qdoc { padding: 20px max(20px, 4%); background: var(--surface-2); }
+.qpaper { background: var(--surface); border-radius: 6px; padding: 24px 28px; box-shadow: 0 1px 3px rgba(16,40,20,.06); }
+.dealstrip { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--lime-soft); border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 18px; }
+.valid { text-align: right; color: var(--gold); font-weight: 500; font-size: 13.5px; }
+.addr { font-size: 13.5px; color: var(--ink-2); padding: 14px 0 18px; border-bottom: 1px solid var(--line); }
+.bk-h { display: flex; align-items: baseline; gap: 12px; padding: 22px 0 18px; }
+.bk-h b { font-size: 16px; }
+.cbox { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin: 22px 0; }
+.cbox .t { font-size: 11.5px; font-weight: 600; letter-spacing: .6px; color: var(--ink-2); margin-bottom: 16px; }
+.oc-t { font-weight: 700; font-size: 15px; letter-spacing: .3px; margin: 26px 0 14px; padding-top: 22px; border-top: 1px solid var(--line); }
+.oc table { min-width: 720px; }
+.oc th { background: #eef2e6; }
+.oc td { border-bottom: 0; font-size: 14px; }
+.sub-t { text-align: right; padding: 14px 0; font-size: 14px; color: var(--ink-2); }
+.sub-t b { color: var(--gold); }
+.redn { background: #c8171e; color: #fff; border-radius: 10px; padding: 16px 20px; font-size: 14px; line-height: 1.65; display: flex; gap: 10px; }
+.terms-t { font-weight: 700; font-size: 15px; margin: 30px 0 14px; padding-top: 24px; border-top: 1px solid var(--line); }
+.terms { border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px 18px 42px; margin: 0; font-size: 14px; line-height: 1.7; }
+
+/* KYC questionnaire */
+.modal.wide { width: min(780px, 100%); padding: 0; }
+.modal.wide .mh { padding: 22px 24px 14px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.modal.wide .mh .lead { margin: 0; }
+.modal.wide .mb { padding: 8px 24px 4px; }
+.modal.wide .mf { padding: 14px 24px; border-top: 1px solid var(--line); position: sticky; bottom: 0; background: var(--surface); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.kyc-sec { padding: 18px 0 6px; }
+.kyc-sec:last-child { border-bottom: 0; }
+.kyc-sec h4 { margin: 0 0 14px; font-size: 13px; letter-spacing: .6px; text-transform: uppercase; color: var(--ink-2); display: flex; gap: 8px; align-items: center; }
+.kyc-sec h4 span { width: 22px; height: 22px; border-radius: 50%; background: var(--lime); color: var(--rail); display: grid; place-items: center; font-size: 11px; }
+.kgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.kgrid .full { grid-column: 1 / -1; }
+.field label .req { color: var(--red); }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choices label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; font-size: 13px; font-weight: 400; color: var(--ink); cursor: pointer; }
+.choices label:has(input:checked) { border-color: var(--green); background: #f3faec; }
+.field .choices input { accent-color: var(--green); margin: 0; width: 16px; height: 16px; padding: 0; flex: none; }
+.choices label { white-space: nowrap; }
+.choices.col label { white-space: normal; }
+.field.bad input, .field.bad select, .field.bad .choices label { border-color: var(--red); }
+.field.bad > label { color: var(--red); }
+.confirm { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink-2); flex: 1 1 100%; }
+.mf #k-back { margin-left: auto; }
+.confirm input { accent-color: var(--green); margin-top: 3px; }
+.confirm.bad { color: var(--red); }
+.linkbtn { background: none; border: 0; color: var(--green); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; padding: 0; font-size: 13px; }
+.kyc-meta { font-size: 12px; color: var(--muted); margin: -12px 0 16px; }
+.flags { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 6px; }
+.flags li { display: flex; gap: 8px; align-items: center; background: var(--amber-soft); color: #6b4a00; border-radius: 6px; padding: 7px 10px; font-size: 12.5px; }
+.kyc-all { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+.kyc-all summary { cursor: pointer; color: var(--green); font-weight: 500; font-size: 13px; }
+.kyc-all dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 20px; margin: 14px 0 0; font-size: 13px; }
+.kyc-all dt { color: var(--ink-2); }
+.kyc-all dd { margin: 0; overflow-wrap: anywhere; }
+.kprog { display: flex; gap: 6px; margin-top: 14px; }
+.kprog span { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
+.kprog span.done { background: var(--green); }
+.kprog span.on { background: var(--lime); }
+.kstep-l { font-size: 12px; color: var(--ink-2); margin-top: 8px; font-weight: 500; }
+.kyc-sec .confirm { margin: 6px 0 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.modal.wide .mb { min-height: 260px; }
+.choices.col { flex-direction: column; align-items: flex-start; }
+.kyc-grp { margin-top: 14px; }
+.kyc-grp b { font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: var(--ink-2); }
+.kyc-grp ul { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
+.kyc-grp li { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.kyc-grp li.on { color: var(--ink); }
+.kyc-grp .bx { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #c9cdc5; display: grid; place-items: center; flex: none; }
+.kyc-grp li.on .bx { background: var(--green); border-color: var(--green); color: #fff; }
+.pill.pass { background: var(--green-soft); color: var(--green); font-weight: 600; }
+@media (max-width: 560px) { .kgrid, .kyc-all dl { grid-template-columns: minmax(0, 1fr); } }
+
+@media (max-width: 1100px) {
+  .qwrap { grid-template-columns: minmax(0, 1fr); }
+  .f4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1000px) {
+  .grid2 { grid-template-columns: minmax(0, 1fr); }
+  .f3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .f3, .f4 { grid-template-columns: minmax(0, 1fr); }
+  .qpaper { padding: 18px; }
+}
+@media (max-width: 720px) {
+  .rail { display: none; }
+  .stats { grid-template-columns: minmax(0, 1fr); }
+  .kv { grid-template-columns: minmax(0, 1fr); }
+  .frow { grid-template-columns: minmax(0, 1fr); }
+  .sel { min-width: 0; flex: 1 1 140px; }
+  .topbar, .content { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .panel { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <nav class="rail" aria-label="Main">
+    <div class="home" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d3b1d" stroke-width="2.2"><path d="M4 20h16M7 16v-5M12 16V7M17 16v-8"/></svg></div>
+    <div class="ico on" title="CRM"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16M7 16v-5M12 16V7M17 16v-8"/></svg></div>
+    <div class="ico" title="Customers"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.7 3 2.5 3.5 5.2"/></svg></div>
+    <div class="ico" title="Shipments"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15h18l-2 4H5zM6 15V9h12v6M9 9V6h6v3"/></svg></div>
+    <div class="ico" title="RFQs"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M9 11h6M9 15h6"/></svg></div>
+    <div class="ico" title="Quotes"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg></div>
+    <div class="ico" title="Finance"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M15 9c-.5-1-1.6-1.6-3-1.6-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.4-1.3 2.3-3 2.3-1.5 0-2.6-.6-3.1-1.7M12 6v1.4M12 16.6V18"/></svg></div>
+    <div class="ico" title="Insights"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v16M8 5a4 4 0 0 0-3 6 4 4 0 0 0 3 7M16 5a4 4 0 0 1 3 6 4 4 0 0 1-3 7"/></svg></div>
+    <div class="me">NK</div>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <span class="crm-pill">CRM</span>
+      <h1>CRM</h1>
+      <span class="wordmark">OnePort <b>365</b></span>
+    </header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+<div id="modal-root"></div>
+
+<script>
+/* ---------- sample data ---------- */
+const OWNERS = {
+  EA: { name: 'Emmanuel Akinrodolu', color: '#8a9a8c', title: 'Sales Executive' },
+  KU: { name: 'Kimeen Ugwu', color: '#4f6455', title: 'Sales Executive' },
+  NM: { name: 'Nkechi Moses', color: '#8a9a8c', title: 'Sales Executive' },
+  SE: { name: 'Sotonye Ebadan', color: '#8a9a8c', title: 'Sales Executive' },
+  GO: { name: 'Gift Osaremen', color: '#4f6455', title: 'Sales Executive' },
+  OA: { name: 'Okpanachi Adaji', color: '#8a9a8c', title: 'Sales Executive' },
+  AJ: { name: 'Aishat Jimoh', color: '#123b20', title: 'Sales Executive' },
+  BC: { name: 'Biggie Cole', color: '#8a9a8c', title: 'Sales Executive' },
+  CE: { name: 'Chinedu Enworom', color: '#4f6455', title: 'Sales Executive' },
+  KA: { name: 'Kayode Akintade', color: '#123b20', title: 'Sales Executive' },
+  SYS: { name: 'OnePort365 system', color: '#7a8278', title: 'Automatic' },
+};
+const STAGES = [
+  { key: 'prospect', label: 'Prospect' },
+  { key: 'contacted', label: 'Contacted' },
+  { key: 'qualified', label: 'Qualified' },
+  { key: 'quote', label: 'Quote Issued' },
+  { key: 'closed', label: 'Closed' },
+];
+const stageLabel = k => STAGES.find(s => s.key === k).label;
+
+const deals = [
+  { id: 'OP-26-11-021', name: 'Ovuvuenem', amount: 200, owner: 'EA', cls: 'Growth', created: '2026-11-05', stage: 'prospect', contact: 'Tola Ovuvuenem', product: 'FreightSaver' },
+  { id: 'OP-26-11-020', name: "Brian's logistics", amount: 2000, owner: 'KU', cls: 'Growth', created: '2026-11-05', stage: 'prospect', contact: 'Brian Okafor', product: 'Haulage' },
+  { id: 'OP-26-10-018', name: 'Fast track export', amount: 2300, owner: 'NM', cls: 'Growth', created: '2026-10-29', stage: 'prospect', contact: 'Grace Kelmo', product: 'FreightSaver' },
+  { id: 'OP-26-10-017', name: 'Soni test logistics pvt ltd', amount: 50000, owner: 'SE', cls: 'SME', created: '2026-10-28', stage: 'prospect', contact: 'Ravi Soni', product: 'Ocean freight' },
+  { id: 'OP-26-11-022', name: 'Fast track export', amount: 4000, owner: 'SE', cls: 'Growth', created: '2026-11-06', stage: 'contacted', contact: 'Grace Kelmo', product: 'FreightSaver' },
+  { id: 'OP-26-10-016', name: 'Fast track export', amount: 20000, owner: 'NM', cls: 'Growth', created: '2026-10-19', stage: 'contacted', contact: 'Grace Kelmo', product: 'Ocean freight' },
+  { id: 'OP-26-08-009', name: 'Airtel networks limited', amount: 0, owner: 'GO', cls: 'Enterprise', created: '2026-08-24', stage: 'contacted', contact: 'Ifeoma Bello', product: 'Air freight' },
+  { id: 'OP-26-10-014', name: 'Chevron', amount: 10000, owner: 'OA', cls: 'Growth', created: '2026-10-08', stage: 'contacted', contact: 'Daniel Ekong', product: 'Project cargo' },
+  { id: 'OP-26-11-023', name: 'Manuchar Trading House Int Nigeria', amount: 3500, owner: 'KA', cls: 'Enterprise', created: '2026-11-03', stage: 'qualified', contact: 'Ekene Abiaziem', product: 'Ocean freight', rfqs: ['RFQ-26-11-015'],
+    note: 'Chemical import, Aarhus to Apapa. Customer needs the NAFDAC permit cleared before shipping.' },
+  { id: 'OP-26-09-012', name: 'Regency overseas (rol)', amount: 10900, owner: 'GO', cls: 'SME', created: '2026-09-22', stage: 'qualified', contact: 'Arjun Mehta', product: 'Ocean freight' },
+  { id: 'OP-26-09-011', name: 'Alliance chemicals global', amount: 550, owner: 'GO', cls: 'SME', created: '2026-09-22', stage: 'qualified', contact: 'Uche Nwosu', product: 'Customs clearance' },
+  { id: 'OP-26-09-010', name: 'Cybele cosmetics', amount: 7840, owner: 'GO', cls: 'SME', created: '2026-09-22', stage: 'qualified', contact: 'Funmi Adeyemi', product: 'Air freight' },
+  { id: 'OP-26-09-013', name: 'Premium agro', amount: 2940, owner: 'GO', cls: 'Growth', created: '2026-09-22', stage: 'qualified', contact: 'Sani Musa', product: 'FreightSaver' },
+  { id: 'OP-26-11-024', name: 'Manuchar Trading House Int Nigeria', amount: 73, owner: 'KA', cls: 'Enterprise', created: '2026-11-04', stage: 'quote', contact: 'Ekene Abiaziem', product: 'Customs clearance (NAFDAC permit)', quotes: ['Q-26-11-017'],
+    note: 'Permit-to-clear request. Quote total is NGN 105,000 (about $73).' },
+  { id: 'OP-26-09-008', name: 'Eunisell', amount: 5200, owner: 'AJ', cls: 'SME', created: '2026-09-03', stage: 'quote', contact: 'Kunle Adebayo', product: 'Ocean freight' },
+  { id: 'OP-26-07-004', name: 'Ovuvuenem', amount: 2000, owner: 'EA', cls: 'Enterprise', created: '2026-07-15', stage: 'quote', contact: 'Tola Ovuvuenem', product: 'Haulage' },
+  { id: 'OP-26-07-005', name: 'Money minded', amount: 1, owner: 'BC', cls: 'SME', created: '2026-07-15', stage: 'quote', contact: 'Biggie Cole', product: 'FreightSaver' },
+  { id: 'OP-26-07-006', name: 'Crochets', amount: 44444, owner: 'CE', cls: 'SME', created: '2026-07-15', stage: 'quote', contact: 'Ada Crochets', product: 'Ocean freight' },
+  { id: 'OP-26-11-019', name: 'Fast track export', amount: 1000, owner: 'NM', cls: 'Growth', created: '2026-11-04', stage: 'closed', outcome: 'won', contact: 'Grace Kelmo', product: 'FreightSaver' },
+  { id: 'OP-26-10-015', name: 'Fast track export', amount: 30000, owner: 'NM', cls: 'SME', created: '2026-10-09', stage: 'closed', outcome: 'won', contact: 'Grace Kelmo', product: 'Ocean freight' },
+  { id: 'OP-26-10-013', name: 'Fast track export', amount: 20000, owner: 'NM', cls: 'SME', created: '2026-10-09', stage: 'closed', outcome: 'won', contact: 'Grace Kelmo', product: 'FreightSaver' },
+  { id: 'OP-26-08-007', name: 'Delta foods', amount: 6800, owner: 'KU', cls: 'Growth', created: '2026-08-12', stage: 'closed', outcome: 'lost', contact: 'Efe Okoro', product: 'Reefer haulage' },
+];
+
+const rfqs = {
+  'RFQ-26-11-015': {
+    id: 'RFQ-26-11-015', status: 'Quoted', quoteStatus: 'Ready', created: '2026-11-05T11:20', dealId: 'OP-26-11-023',
+    service: 'Ocean Freight FCL', customer: 'Manuchar Trading House Int Nigeria', contact: 'Ekene Abiaziem', email: 'ekene.odagu@manuchar.com',
+    origin: 'Aarhus (DKAAR) Denmark', destination: 'Apapa (NGAPP) Nigeria', routeShort: 'Aarhus, Denmark → Apapa, Nigeria',
+    goodsValue: 'USD 40,000,000', bl: '—', branch: 'Lagos', source: 'Backoffice', incoterm: 'CFR', owner: 'KA', documents: '—',
+    notes: 'Request for Permit to clear - Manuchar Customer has approved for payment',
+    containers: [{ cls: 'FAK', commodity: 'Chemical', size: '20 FT', type: 'Dry', count: 3, weight: 28 }],
+    quotes: ['Q-26-11-017'],
+  },
+};
+
+const quotes = {
+  'Q-26-11-017': {
+    id: 'Q-26-11-017', rfqId: 'RFQ-26-11-015', dealId: 'OP-26-11-024', status: 'Ready', issued: '2026-11-06T10:05', validDays: 7, cur: '₦',
+    charges: [{ basis: 'Nafdac Permit', unit: 3, ft20: 3, cost: 30000, margin: '14.2857%', sell: 105000, desc: 'Per Container' }],
+  },
+};
+const quoteTotal = q => q.charges.reduce((a, c) => a + c.sell, 0);
+const qMoney = (q, n) => q.cur + Math.round(n).toLocaleString('en-US');
+/* Other quotes in the Quotes list (shown for context, from the live screen) */
+const QUOTE_LIST = [
+  { id: 'Q-26-11-017', status: 'Ready', co: 'Manuchar Trading House Int Nigeria', svc: 'Ocean Freight · FCL', route: 'Aarhus, Denmark → Apapa, Nigeria', date: '2026-11-06' },
+  { id: 'Q-26-11-016', status: 'Ready', co: 'Bioscape Commodities Africa Limited', svc: 'Customs Brokerage', route: 'Tincan/Lagos, Nigeria → Leixões, Portugal', date: '2026-11-06' },
+  { id: 'Q-26-11-015', status: 'Ready', co: 'Bioscape Commodities Africa Limited', svc: 'Customs Brokerage', route: 'Tincan/Lagos, Nigeria → Gdansk, Poland', date: '2026-11-06' },
+  { id: 'Q-26-11-014', status: 'Awaiting Customer Decision', co: 'Greenpeg', svc: 'Air Freight', route: 'PNQ → LOS', date: '2026-11-04' },
+  { id: 'Q-26-11-013', status: 'Awaiting Customer Decision', co: 'Greenpeg', svc: 'Air Freight', route: 'PNQ → LOS', date: '2026-11-04' },
+];
+
+const MANUCHAR_KYC = {
+  company: ['Registered company name', 'CAC registration (RC) number', 'Tax identification number (TIN)', 'Registered business address', 'In business for more than 1 year'],
+  contact: ['Full name', 'Role / job title', 'Business email', 'Phone number'],
+  dir: ['Import'], vol: ['5 to 20 TEU'], services: ['Ocean freight', 'Customs clearance', 'Haulage'],
+  compliance: ['Cargo needs regulatory permits (NAFDAC, SON, NAQS)'],
+  terms: ['14 days credit'],
+  docs: ['CAC certificate', 'TIN certificate', "Director's valid ID", 'Proof of address (utility bill)'],
+};
+/* KYC answers per deal; filled when a deal moves to Qualified */
+const kyc = {
+  'OP-26-11-023': { a: MANUCHAR_KYC, by: 'KA', at: '2026-11-04T16:05' },
+  'OP-26-11-024': { a: MANUCHAR_KYC, by: 'KA', at: '2026-11-04T14:55' },
+};
+
+const history = {
+  'OP-26-11-023': [
+    { t: 'Moved deal from Contacted to Qualified', by: 'KA', at: '2026-11-04T16:10', tag: 'Qualified', comment: 'Customer has approved for payment.' },
+    { t: 'KYC questionnaire completed', by: 'KA', at: '2026-11-04T16:05', tag: 'KYC: Needs review', comment: 'NAFDAC permit still in progress.' },
+    { t: 'Moved deal from Prospect to Contacted', by: 'KA', at: '2026-11-03T12:30', tag: 'Contacted' },
+  ],
+  'OP-26-11-024': [
+    { t: 'Moved deal from Qualified to Quote Issued', by: 'KA', at: '2026-11-06T10:12', tag: 'Quote Issued', comment: 'Quote sent to Ekene. Valid for 7 days.' },
+    { t: 'Moved deal from Prospect to Qualified', by: 'KA', at: '2026-11-04T15:00', tag: 'Qualified' },
+    { t: 'KYC questionnaire completed', by: 'KA', at: '2026-11-04T14:55', tag: 'KYC: Needs review', comment: 'NAFDAC permit still in progress.' },
+  ],
+  'OP-26-10-013': [
+    { t: 'Deal marked Won', by: 'NM', at: '2026-10-09T09:44', tag: 'Won', tagCls: 'won', comment: 'Won' },
+    { t: 'Moved deal from Prospect to Quote Issued', by: 'NM', at: '2026-10-09T09:44', tag: 'Quote Issued', comment: 'Customer is ready to move forward' },
+  ],
+};
+
+/* ---------- helpers ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = n => '$' + Math.round(n).toLocaleString('en-US');
+const pad = n => String(n).padStart(2, '0');
+const d = s => new Date(s.length <= 10 ? s + 'T09:42' : s);
+const dmy = s => { const x = d(s); return `${pad(x.getDate())}-${pad(x.getMonth() + 1)}-${x.getFullYear()}`; };
+const slash = s => { const x = d(s); return `${pad(x.getDate())}/${pad(x.getMonth() + 1)}/${x.getFullYear()}`; };
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const longD = s => { const x = d(s); return `${MON[x.getMonth()]} ${x.getDate()}, ${x.getFullYear()}`; };
+const time = s => { const x = d(s); let h = x.getHours(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${pad(x.getMinutes())} ${ap}`; };
+const TODAY = new Date('2026-11-06T12:00');
+const daysAgo = s => Math.round((TODAY - d(s)) / 864e5);
+const nowIso = () => { const x = new Date(); return `2026-11-06T${pad(x.getHours())}:${pad(x.getMinutes())}`; };
+const av = k => `<span class="av" style="background:${OWNERS[k].color}">${k}</span>`;
+const dealById = id => deals.find(x => x.id === id);
+/* Rule: an RFQ is tied to a deal in Qualified, a quote is tied to a deal in Quote Issued. A deal only shows its own records. */
+const dealQuotes = deal => (deal.quotes || []).filter(q => quotes[q] && quotes[q].dealId === deal.id);
+const dealRfqs = deal => (deal.rfqs || []).filter(r => rfqs[r] && rfqs[r].dealId === deal.id);
+const ID_RE = /\b(RFQ-\d{2}-\d{2}-\d{3}|Q-\d{2}-\d{2}-\d{3}|OP-\d{2}-\d{2}-\d{3})\b/g;
+const exists = id => !!(rfqs[id] || quotes[id] || dealById(id));
+const idLink = id => exists(id) ? `<a class="idlink" href="#${id.toLowerCase()}">${id}</a>` : id;
+/* escape text, then turn any known RFQ / quote / deal number into a link */
+const linkify = s => esc(s).replace(ID_RE, m => idLink(m));
+const ICON = {
+  rfq: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h8l4 4v14H6z"/><path d="M9 11h6M9 15h6"/></svg>',
+  quote: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>',
+  ship: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 15h18l-2 4H5zM6 15V9h12v6"/></svg>',
+  back: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg>',
+  go: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 5l7 7-7 7"/></svg>',
+  check: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-10"/></svg>',
+  pen: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  warn: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/></svg>',
+};
+function linkChips(deal) {
+  const rs = dealRfqs(deal);
+  const out = rs.map(r => `<a class="chip rfq" href="#${r.toLowerCase()}" title="Open ${r}">${ICON.rfq}${r}</a>`);
+  dealQuotes(deal).forEach(q => out.push(`<a class="chip quote" href="#${q.toLowerCase()}" title="Open ${q}">${ICON.quote}${q}</a>`));
+  return out.join('');
+}
+function toast(msg) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+function addHistory(dealId, ev) { (history[dealId] = history[dealId] || []).unshift({ at: nowIso(), by: 'NM', ...ev }); }
+
+/* ---------- routing ---------- */
+const ui = { tab: 'pipeline', view: 'board', q: '', owner: '', status: '', date: '' };
+function go(hash) { if (location.hash.slice(1) === hash) render(); else location.hash = hash; }
+function back() { if (navStack.length > 1) history_back(); else go('pipeline'); }
+const navStack = [];
+function history_back() { navStack.pop(); const prev = navStack.pop(); go(prev || 'pipeline'); }
+window.addEventListener('hashchange', render);
+document.addEventListener('click', e => {
+  if (e.target.closest('a[href^="#"]')) return; /* plain links route through the hash */
+  const g = e.target.closest('[data-go]');
+  if (g) { e.stopPropagation(); go(g.dataset.go); }
+});
+
+function render() {
+  const h = (location.hash.slice(1) || 'pipeline').toLowerCase();
+  if (navStack[navStack.length - 1] !== h) navStack.push(h);
+  const id = h.toUpperCase();
+  const v = $('#view');
+  if (h.startsWith('op-') && dealById(id)) v.innerHTML = dealView(dealById(id));
+  else if (h.startsWith('rfq-') && rfqs[id]) v.innerHTML = rfqView(rfqs[id]);
+  else if (h.startsWith('q-') && quotes[id]) v.innerHTML = quoteView(quotes[id]);
+  else { v.innerHTML = pipelineView(); bindPipeline(); }
+  window.scrollTo(0, 0);
+}
+
+/* ---------- pipeline ---------- */
+function filtered() {
+  const q = ui.q.trim().toLowerCase();
+  return deals.filter(x => {
+    if (ui.owner && x.owner !== ui.owner) return false;
+    if (ui.status === 'open' && x.stage === 'closed') return false;
+    if (ui.status === 'won' && x.outcome !== 'won') return false;
+    if (ui.status === 'lost' && x.outcome !== 'lost') return false;
+    if (ui.date && daysAgo(x.created) > +ui.date) return false;
+    if (q) {
+      const hay = [x.id, x.name, OWNERS[x.owner].name, x.contact, ...(x.rfqs || []), ...dealQuotes(x)].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function pipelineView() {
+  const open = deals.filter(x => x.stage !== 'closed');
+  const won = deals.filter(x => x.outcome === 'won');
+  const list = filtered();
+  return `
+  <div class="tabs" role="tablist">
+    <button class="tab on">◎ Pipeline</button>
+    <button class="tab" data-soon>Companies</button>
+    <button class="tab" data-soon>Contacts</button>
+  </div>
+  <div class="stats">
+    <div class="stat hl"><div class="lbl">Active pipeline (USD)</div><div class="val tnum">${money(open.reduce((a, x) => a + x.amount, 0))}</div><div class="sub">${open.length} deals in progress</div><span class="badge-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20h16M7 16v-5M12 16V7M17 16v-8"/></svg></span></div>
+    <div class="stat"><div class="lbl">Deals won (USD)</div><div class="val gold tnum">${money(won.reduce((a, x) => a + x.amount, 0))}</div><div class="sub">${won.length} deals won</div><span class="badge-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v4a5 5 0 0 1-10 0zM12 13v4M8 20h8M7 6H4a3 3 0 0 0 3 3M17 6h3a3 3 0 0 1-3 3"/></svg></span></div>
+    <div class="stat"><div class="lbl">Total deals</div><div class="val tnum">${deals.length}</div><div class="sub">All-time deals</div><span class="badge-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5"/></svg></span></div>
+  </div>
+  <div class="toolbar">
+    <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="q" placeholder="Search deals, deal ID, RFQ or quote number…" value="${esc(ui.q)}" aria-label="Search deals"></label>
+    <select class="sel" id="f-owner" aria-label="Owner"><option value="">All Owners</option>${Object.entries(OWNERS).map(([k, o]) => `<option value="${k}" ${ui.owner === k ? 'selected' : ''}>${o.name}</option>`).join('')}</select>
+    <select class="sel" id="f-status" aria-label="Status">${[['', 'All Statuses'], ['open', 'Open'], ['won', 'Won'], ['lost', 'Lost']].map(([v, l]) => `<option value="${v}" ${ui.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+    <select class="sel" id="f-date" aria-label="Date created">${[['', 'Date created'], ['7', 'Last 7 days'], ['30', 'Last 30 days'], ['90', 'Last 90 days']].map(([v, l]) => `<option value="${v}" ${ui.date === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+    <div class="seg"><button id="v-board" class="${ui.view === 'board' ? 'on' : ''}">Board</button><button id="v-list" class="${ui.view === 'list' ? 'on' : ''}">List</button></div>
+    <button class="btn primary" id="new-deal">+ New deal</button>
+  </div>
+  <div class="count">Showing <b>${list.length}</b> of ${deals.length} deals</div>
+  ${ui.view === 'board' ? boardHtml(list) : listHtml(list)}`;
+}
+function boardHtml(list) {
+  return `<div class="board-wrap"><div class="board">${STAGES.map((s, i) => {
+    const items = list.filter(x => x.stage === s.key);
+    const meta = s.key === 'closed'
+      ? `${items.filter(x => x.outcome === 'won').length} won · ${items.filter(x => x.outcome === 'lost').length} lost`
+      : `${items.length} · ${money(items.reduce((a, x) => a + x.amount, 0))}`;
+    return `<section class="col" data-stage="${s.key}">
+      <div class="col-h"><div class="t"><span class="n ${s.key === 'closed' ? 'dk' : ''}">${i + 1}</span>${s.label}</div><div class="m tnum">${meta}</div></div>
+      <div class="cards">${items.map(cardHtml).join('') || '<div class="empty-box">No deals here</div>'}</div>
+    </section>`;
+  }).join('')}</div></div>`;
+}
+function cardHtml(x) {
+  const chips = linkChips(x);
+  return `<div class="card" role="button" tabindex="0" draggable="true" data-id="${x.id}" data-go="${x.id.toLowerCase()}">
+    <div class="top">
+      <div class="did">${x.id}</div>
+      <div class="row1"><span class="nm">${esc(x.name)}</span><span class="amt tnum">${money(x.amount)}</span></div>
+      <div class="row2"><span class="owner">${av(x.owner)}${OWNERS[x.owner].name}</span><span class="cls ${x.cls}">${x.cls}</span></div>
+    </div>
+    <div class="bot"><span>Created ${dmy(x.created)}</span>${x.outcome ? `<span class="pill ${x.outcome}">${x.outcome === 'won' ? ICON.check + ' Won' : 'Lost'}</span>` : ''}</div>
+    ${chips ? `<div class="links">${chips}</div>` : ''}
+  </div>`;
+}
+function listHtml(list) {
+  return `<div class="table-wrap"><table>
+    <thead><tr><th>Deal ID</th><th>Company</th><th>Stage</th><th>Owner</th><th>Amount</th><th>Class</th><th>Linked RFQ / Quote</th><th>Created</th></tr></thead>
+    <tbody>${list.map(x => `<tr data-go="${x.id.toLowerCase()}">
+      <td><b>${x.id}</b></td><td>${esc(x.name)}</td>
+      <td>${x.stage === 'closed' ? `<span class="pill ${x.outcome}">${x.outcome === 'won' ? 'Won' : 'Lost'}</span>` : `<span class="pill stage">${stageLabel(x.stage)}</span>`}</td>
+      <td><span class="owner">${av(x.owner)}${OWNERS[x.owner].name}</span></td>
+      <td class="tnum" style="color:var(--gold);font-weight:600">${money(x.amount)}</td>
+      <td><span class="cls ${x.cls}">${x.cls}</span></td>
+      <td><div style="display:flex;gap:6px">${linkChips(x) || '<span style="color:var(--muted)">None</span>'}</div></td>
+      <td class="tnum">${dmy(x.created)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+/* Drag a card to another column. Entering Qualified for the first time runs the KYC checklist first. */
+function moveDeal(id, target) {
+  const x = dealById(id);
+  if (!x || target === x.stage) return;
+  if (target === 'closed') return closeDealModal(id);
+  if (target === 'quote' && !dealQuotes(x).length) return toast('This deal moves to Quote Issued once a quote has been issued for it');
+  if (needsKyc(x, target)) return kycModal(id, { name: x.name, amount: x.amount, cls: x.cls, stage: target });
+  applyStage(x, target);
+  toast(`${x.name} moved to ${stageLabel(target)}`); render();
+}
+function stageName(x) { return x.outcome ? (x.outcome === 'won' ? 'Won' : 'Lost') : stageLabel(x.stage); }
+function applyStage(x, target, comment) {
+  const before = stageName(x);
+  if (target === 'won' || target === 'lost') {
+    x.stage = 'closed'; x.outcome = target;
+    addHistory(x.id, { t: `Deal marked ${target === 'won' ? 'Won' : 'Lost'}`, tag: target === 'won' ? 'Won' : 'Lost', tagCls: target === 'won' ? 'won' : '', comment });
+  } else {
+    x.stage = target; delete x.outcome;
+    addHistory(x.id, { t: `Moved deal from ${before} to ${stageLabel(target)}`, tag: stageLabel(target), comment });
+  }
+}
+function closeDealModal(id) {
+  const x = dealById(id);
+  modal(`<h3>Close ${esc(x.name)}</h3><p class="lead">${x.id} · How did this deal end?</p>
+    <div class="opts"><label class="opt"><input type="radio" name="cl" value="won" checked><div><b>Won</b><div>The customer accepted and is shipping with us</div></div></label>
+    <label class="opt"><input type="radio" name="cl" value="lost"><div><b>Lost</b><div>The customer went elsewhere or dropped the request</div></div></label></div>
+    <div class="field"><label for="cl-c">Comment</label><input id="cl-c" placeholder="Optional"></div>
+    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" onclick="doClose('${id}')">Close deal</button></div>`);
+}
+function doClose(id) {
+  const x = dealById(id), out = document.querySelector('input[name=cl]:checked').value;
+  if (out === 'won' && needsKyc(x, 'won')) return kycModal(id, { name: x.name, amount: x.amount, cls: x.cls, stage: 'won', comment: $('#cl-c').value.trim() || undefined });
+  applyStage(x, out, $('#cl-c').value.trim() || undefined);
+  closeModal(); toast(`${x.name} marked ${out === 'won' ? 'Won' : 'Lost'}`); render();
+}
+function bindPipeline() {
+  const q = $('#q');
+  q.addEventListener('input', () => { ui.q = q.value; const pos = q.selectionStart; render(); const n = $('#q'); n.focus(); n.setSelectionRange(pos, pos); });
+  [['#f-owner', 'owner'], ['#f-status', 'status'], ['#f-date', 'date']].forEach(([s, k]) => $(s).addEventListener('change', e => { ui[k] = e.target.value; render(); }));
+  $('#v-board').onclick = () => { ui.view = 'board'; render(); };
+  $('#v-list').onclick = () => { ui.view = 'list'; render(); };
+  $('#new-deal').onclick = newDealModal;
+  document.querySelectorAll('[data-soon]').forEach(b => b.onclick = () => toast('Companies and Contacts are outside this prototype'));
+  document.querySelectorAll('.card').forEach(c => {
+    c.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target === c) go(c.dataset.go); });
+    c.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', c.dataset.id); e.dataTransfer.effectAllowed = 'move'; c.classList.add('dragging'); });
+    c.addEventListener('dragend', () => { c.classList.remove('dragging'); document.querySelectorAll('.col.over').forEach(x => x.classList.remove('over')); });
+  });
+  document.querySelectorAll('.col').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; col.classList.add('over'); });
+    col.addEventListener('dragleave', e => { if (!col.contains(e.relatedTarget)) col.classList.remove('over'); });
+    col.addEventListener('drop', e => { e.preventDefault(); col.classList.remove('over'); moveDeal(e.dataTransfer.getData('text/plain'), col.dataset.stage); });
+  });
+}
+
+/* ---------- deal ---------- */
+function stageBadge(x) {
+  if (x.outcome === 'won') return `<span class="pill won">${ICON.check} Deal Won</span>`;
+  if (x.outcome === 'lost') return `<span class="pill lost">Deal Lost</span>`;
+  return `<span class="pill stage">${stageLabel(x.stage)}</span>`;
+}
+function dealView(x) {
+  const o = OWNERS[x.owner];
+  const ev = (history[x.id] || []).concat([{ t: 'Deal Created', at: x.created, created: true }]);
+  return `
+  <button class="back" onclick="back()">${ICON.back} Back to dashboard</button>
+  <div class="panel" style="margin-bottom:20px">
+    <div class="head" style="margin:0">
+      <div><h2>${esc(x.name)}</h2><div class="ids"><span class="idtag">${x.id}</span>${stageBadge(x)}</div></div>
+      <button class="btn" onclick="editDealModal('${x.id}')">Edit ${ICON.pen}</button>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="panel">
+        <p class="sec-t">Deal information</p>
+        <div class="kv">
+          <div><div class="k">Deal</div><div class="v">${x.id}</div></div>
+          <div><div class="k">Deal amount</div><div class="v gold tnum">${money(x.amount)}</div></div>
+          <div><div class="k">Contact</div><div class="v">${esc(x.contact)}</div></div>
+          <div><div class="k">Date created</div><div class="v tnum">${slash(x.created)}</div></div>
+          <div><div class="k">Product</div><div class="v">${esc(x.product)}</div></div>
+          <div><div class="k">Class</div><div class="v"><span class="cls ${x.cls}" style="font-size:12px;padding:4px 12px">${x.cls}</span></div></div>
+          <div class="${linkedField(x) ? '' : 'full'}"><div class="k">Sales owner</div><div class="so"><span class="av">${x.owner}</span><div><b>${o.name}</b><small>${o.title}</small></div></div></div>
+          ${linkedField(x)}
+          <div class="full"><div class="k">Note</div><div class="note">${esc(x.note || 'No notes on this deal yet.')}</div></div>
+        </div>
+      </div>
+      ${kycPanel(x)}
+    </div>
+    <div class="panel">
+      <div class="lk-head" style="margin-bottom:20px"><p class="sec-t">Deal history</p><button class="btn primary" onclick="activityModal('${x.id}')">+ Add Activity</button></div>
+      <div class="hist">${ev.map(e => `<div class="ev">
+        <div class="r"><b>${esc(e.t)}</b>${e.tag ? `<span class="tag ${e.tagCls || ''}">${esc(e.tag)}</span>` : ''}</div>
+        <div class="meta">${e.created ? `${daysAgo(e.at)} days ago · ${time(e.at)}` : `${OWNERS[e.by].name} &nbsp;•&nbsp; ${longD(e.at)} · ${time(e.at)}`}</div>
+        ${e.comment ? `<div class="cm">Comment: ${esc(e.comment)}</div>` : ''}
+      </div>`).join('')}</div>
+    </div>
+  </div>`;
+}
+function rfqPill(r) { return `<span class="pill ${r.status === 'Quoted' ? 'quoted' : r.status === 'New' ? 'new' : 'quoting'}">${r.status}</span>`; }
+function quotePill(status) { return `<span class="pill ${status === 'Ready' ? 'ready' : 'await'}">${status}</span>`; }
+function linkedField(x) {
+  const rs = dealRfqs(x), qs = dealQuotes(x);
+  if (rs.length) return `<div><div class="k">RFQ</div><div class="v">${rs.map(idLink).join(', ')}</div></div>`;
+  if (qs.length) return `<div><div class="k">Quote</div><div class="v">${qs.map(idLink).join(', ')}</div></div>`;
+  return '';
+}
+
+/* ---------- RFQ ---------- */
+function dealLinkCard(dealId) {
+  const dl = dealById(dealId);
+  return `<a class="linkcard" href="#${dl.id.toLowerCase()}" style="text-decoration:none;color:inherit"><span class="so"><span class="av">${dl.owner}</span></span>
+    <span class="tx"><small><span class="idlink" style="color:var(--green);font-weight:600;text-decoration:underline;text-underline-offset:3px">${dl.id}</span> · ${stageLabel(dl.stage)}</small><b>${esc(dl.name)}</b></span><span class="tnum" style="color:var(--gold);font-weight:600">${money(dl.amount)}</span>${ICON.go}</a>`;
+}
+const fld = (k, v) => `<div><div class="k">${k}</div><div class="v">${v}</div></div>`;
+const CHEV = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 15l6-6 6 6"/></svg>';
+function containerFields(c, grid) {
+  return `<div class="${grid}">${fld('Class', esc(c.cls))}${fld('Commodity description', esc(c.commodity))}${fld('Container size', esc(c.size))}${fld('Container type', esc(c.type))}${fld('Count', c.count)}${fld('Weight (kg)', c.weight.toLocaleString('en-US'))}</div>`;
+}
+function rfqView(r) {
+  return `
+  <button class="back grey" onclick="back()">${ICON.back} Go Back</button>
+  <div class="grid2" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)">
+    <div class="rfq-card">
+      <div class="hd"><div><div class="rfq-title"><h2>${r.id}</h2>${rfqPill(r)}</div><div class="subt">Request Details</div></div>
+        <button class="btn" onclick="toast('Editing RFQs is outside this prototype')">${ICON.pen} Edit RFQ</button></div>
+      <div class="bd">
+        <div class="f3">
+          ${fld('Service type', esc(r.service))}${fld('Company name', esc(r.customer))}${fld('Contact', esc(r.contact))}
+          ${fld('Port of loading', esc(r.origin))}${fld('Port of destination', esc(r.destination))}${fld('Total value of goods', esc(r.goodsValue))}
+          ${fld('BL number', esc(r.bl))}${fld('Branch', esc(r.branch))}${fld('Source', esc(r.source))}
+          ${fld('Incoterms', esc(r.incoterm))}${fld('Owner', OWNERS[r.owner].name)}${fld('Quote status', r.quoteStatus === 'Ready' ? quotePill('Ready') : esc(r.quoteStatus))}
+          ${fld('Documents', esc(r.documents))}${fld('Notes', esc(r.notes))}
+        </div>
+        <p class="h-sm">Container Details</p>
+        ${r.containers.map(c => `<details class="acc" open><summary>Container Details ${CHEV}</summary><div class="in">${containerFields(c, 'f3')}</div></details>`).join('')}
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <p class="sec-t">Linked deal</p>
+        ${r.dealId ? dealLinkCard(r.dealId) : `<div class="empty-box">No deal yet. The system links this RFQ to its deal automatically.</div>`}
+      </div>
+      <div class="panel">
+        <div class="lk-head" style="margin-bottom:16px"><p class="sec-t">Quotes on this RFQ</p><button class="btn sm" onclick="toast('Quote builder is outside this prototype')">+ Create quote</button></div>
+        ${r.quotes.length ? `<div class="tree">${r.quotes.map(qid => { const q = quotes[qid]; return `<div class="node quote"><div class="node-row"><span class="ic">${ICON.quote}</span>
+          <div class="tx">${idLink(q.id)} &nbsp;${quotePill(q.status)}<div>Issued ${longD(q.issued)}${q.dealId ? ` · deal ${idLink(q.dealId)}` : ''}</div></div><span class="amt tnum">${qMoney(q, quoteTotal(q))}</span></div></div>`; }).join('')}</div>`
+          : '<div class="empty-box">No quotes yet. The pricing team is working on this request.</div>'}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- quote ---------- */
+function quoteView(q) {
+  const r = rfqs[q.rfqId];
+  const dealId = q.dealId || r.dealId;
+  const dl = dealId && dealById(dealId);
+  return `
+  <button class="back grey" onclick="back()">${ICON.back} Go Back</button>
+  <div class="qwrap">
+    <aside class="qlist">
+      <div class="qh"><span>ALL QUOTES</span><button class="btn sm" onclick="toast('Search is outside this prototype')">⌕</button><button class="btn sm" onclick="toast('Filters are outside this prototype')">Filter</button><button class="btn sm primary" onclick="toast('Quote builder is outside this prototype')">+ New</button></div>
+      <div class="qtabs"><span class="on">All (69)</span><span>Draft (5)</span><span>Pending approval (0)</span></div>
+      <div class="shw">Showing 69 of 69 quotes</div>
+      ${QUOTE_LIST.map(it => `<button class="qi ${it.id === q.id ? 'on' : ''}" ${quotes[it.id] ? `data-go="${it.id.toLowerCase()}"` : `onclick="toast('${it.id} is not filled in this prototype')"`}>
+        <div class="a"><b>${it.id}</b>${quotePill(it.status)}</div><div class="c">${esc(it.co)}</div><div class="s">${esc(it.svc)}</div><div class="r">${esc(it.route)}</div><div class="r">${it.date}</div></button>`).join('')}
+    </aside>
+    <section class="qmain">
+      <div class="qbar"><div class="ttl"><b>${q.id}</b><span>${esc(r.customer)} · ${esc(r.routeShort)}</span></div>
+        <select id="q-status" aria-label="Quote status"><option>Ready</option><option>Draft</option><option>Pending approval</option><option>Awaiting Customer Decision</option><option>Accepted</option><option>Rejected</option></select>
+        <button class="btn" onclick="toast('PDF export is outside this prototype')">PDF</button></div>
+      <div class="qdoc"><div class="qpaper">
+        ${dl ? `<div class="dealstrip">${ICON.check}<span>Linked deal</span>${idLink(dl.id)}<span>· ${esc(dl.name)} · ${stageLabel(dl.stage)}</span></div>` : ''}
+        <div class="valid">Valid for ${q.validDays} days</div>
+        <div class="addr">Meydan Grandstand, 6th floor, Meydan Road, Nad Al Sheba, Dubai, U.A.E.</div>
+        <details open><summary style="list-style:none;cursor:pointer"><div class="bk-h"><b>Booking Details</b>${idLink(r.id)}<span style="margin-left:auto">${CHEV}</span></div></summary>
+          <div class="f4">
+            ${fld('Service type', esc(r.service))}${fld('Company name', `<b>${esc(r.customer)}</b>`)}${fld('Customer name', esc(r.contact))}${fld('Email address', esc(r.email))}
+            ${fld('Port of loading', esc(r.origin))}${fld('Port of destination', esc(r.destination))}${fld('Total value of goods', esc(r.goodsValue))}${fld('BL number', esc(r.bl))}
+            ${fld('Branch', esc(r.branch))}${fld('Source', esc(r.source))}${fld('Incoterms', esc(r.incoterm))}
+          </div>
+          ${r.containers.map(c => `<div class="cbox"><div class="t">CONTAINER DETAILS</div>${containerFields(c, 'f4')}</div>`).join('')}
+          ${fld('Notes', esc(r.notes))}
+        </details>
+        <div class="oc-t">OTHER CHARGES</div>
+        <div class="oc table-wrap" style="border:0"><table>
+          <thead><tr><th>Basis</th><th>Unit</th><th>20FT</th><th>Cost</th><th>Margin %</th><th>Sell</th><th>Description</th></tr></thead>
+          <tbody>${q.charges.map(c => `<tr style="cursor:default"><td style="color:var(--blue)">${esc(c.basis)}</td><td>${c.unit}</td><td>${c.ft20}</td><td class="tnum"><b>${qMoney(q, c.cost)}</b></td><td>${c.margin}</td><td class="tnum" style="color:var(--gold);font-weight:600">${qMoney(q, c.sell)}</td><td>${esc(c.desc)}</td></tr>`).join('')}</tbody>
+        </table></div>
+        <div class="sub-t">Sub Total: <b class="tnum">${qMoney(q, quoteTotal(q))}</b></div>
+        <div class="redn">${ICON.warn}<span><b>NOTE:</b> Duty and tax advised are subject to verification and assessment by NCS upon arrival of cargo. 7.5% VAT will be applicable at the time of invoicing. Please note this offer is firm for acceptance within 48hours, otherwise above offer will be considered as invalid. Storage / detention / demurrage charges (if any) are as per receipted.</span></div>
+        <div class="terms-t">ONEPORT365 TERMS AND CONDITIONS</div>
+        <ol class="terms">
+          <li>All documents related to clearing shipments is to be provided by the CLIENT where we do not handle documentation.</li>
+          <li>CLIENT to ensure that all the details are correct and in order.</li>
+          <li>CLIENT ensures that all permits required for the Importation of their commodity are provided and valid at the time of Import.</li>
+          <li>The Goods imported are the same as the Goods declared on all Documents provided.</li>
+          <li>CLIENT to ensure timely payment of Duty.</li>
+          <li>CLIENT to offload SERVICE PROVIDER's Trucks within 24Hrs of arrival at Facility, Truck demurrage per day applies for delays@N30,000.</li>
+          <li>CLIENT to provide Delivery address accurately on the DATASHEET.</li>
+        </ol>
+      </div></div>
+    </section>
+  </div>`;
+}
+
+/* ---------- modals ---------- */
+function modal(html, cls = '') { $('#modal-root').innerHTML = `<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal ${cls}" role="dialog" aria-modal="true">${html}</div></div>`; const f = $('#modal-root input, #modal-root select, #modal-root textarea'); if (f) f.focus(); }
+function closeModal() { $('#modal-root').innerHTML = ''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function activityModal(dealId) {
+  modal(`<h3>Add activity</h3><p class="lead">${dealId}</p>
+    <div class="field"><label for="a-type">Activity</label><select id="a-type"><option>Call</option><option>Email</option><option>Meeting</option><option>Note</option></select></div>
+    <div class="field"><label for="a-c">Comment</label><textarea id="a-c" placeholder="What happened?"></textarea></div>
+    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" onclick="saveActivity('${dealId}')">Save activity</button></div>`);
+}
+function saveActivity(dealId) {
+  const t = $('#a-type').value, c = $('#a-c').value.trim();
+  addHistory(dealId, { t: `${t} logged`, tag: t, comment: c || undefined });
+  closeModal(); toast('Activity saved'); render();
+}
+function editDealModal(dealId) {
+  const x = dealById(dealId);
+  const cur = x.outcome ? x.outcome : x.stage;
+  const opts = [...STAGES.filter(s => s.key !== 'closed').map(s => [s.key, s.label]), ['won', 'Closed · Won'], ['lost', 'Closed · Lost']];
+  modal(`<h3>Edit deal</h3><p class="lead">${x.id}</p>
+    <div class="field"><label for="e-n">Company</label><input id="e-n" value="${esc(x.name)}"></div>
+    <div class="frow"><div class="field"><label for="e-a">Amount (USD)</label><input id="e-a" type="number" min="0" value="${x.amount}"></div>
+    <div class="field"><label for="e-c">Class</label><select id="e-c">${['SME', 'Growth', 'Enterprise'].map(c => `<option ${c === x.cls ? 'selected' : ''}>${c}</option>`).join('')}</select></div></div>
+    <div class="field"><label for="e-s">Stage</label><select id="e-s">${opts.map(([k, l]) => `<option value="${k}" ${k === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    <div id="e-err"></div>
+    <div class="field"><label for="e-cm">Comment</label><input id="e-cm" placeholder="Why is this changing?"></div>
+    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" id="e-save" onclick="saveDeal('${x.id}')">Save changes</button></div>`);
+  const chk = () => {
+    const s = $('#e-s').value, hasQ = dealQuotes(x).length, kycNext = needsKyc(x, s);
+    $('#e-err').innerHTML = s === 'quote' && !hasQ ? `<p class="err">This deal can move to Quote Issued once a quote has been issued for it. The quote is linked automatically.</p>`
+      : kycNext ? `<div class="callout ok">${ICON.check}<span>Next you'll complete the KYC questionnaire. The deal moves to Qualified when it's submitted.</span></div>` : '';
+    $('#e-save').textContent = kycNext ? 'Continue to KYC' : 'Save changes';
+  };
+  $('#e-s').addEventListener('change', chk); chk();
+}
+function saveDeal(dealId) {
+  const x = dealById(dealId);
+  const s = $('#e-s').value;
+  if (s === 'quote' && !dealQuotes(x).length) return;
+  if (needsKyc(x, s)) {
+    const pending = { name: $('#e-n').value.trim() || x.name, amount: Math.max(0, +$('#e-a').value || 0), cls: $('#e-c').value, comment: $('#e-cm').value.trim() || undefined, stage: s };
+    return kycModal(x.id, pending);
+  }
+  const before = x.outcome ? (x.outcome === 'won' ? 'Won' : 'Lost') : stageLabel(x.stage);
+  x.name = $('#e-n').value.trim() || x.name; x.amount = Math.max(0, +$('#e-a').value || 0); x.cls = $('#e-c').value;
+  const cm = $('#e-cm').value.trim() || undefined;
+  if (s === 'won' || s === 'lost') {
+    if (x.outcome !== s) { x.stage = 'closed'; x.outcome = s; addHistory(x.id, { t: `Deal marked ${s === 'won' ? 'Won' : 'Lost'}`, tag: s === 'won' ? 'Won' : 'Lost', tagCls: s === 'won' ? 'won' : '', comment: cm }); }
+  } else if (s !== x.stage || x.outcome) {
+    x.stage = s; delete x.outcome; addHistory(x.id, { t: `Moved deal from ${before} to ${stageLabel(s)}`, tag: stageLabel(s), comment: cm });
+  }
+  closeModal(); toast('Deal updated'); render();
+}
+/* ---------- KYC questionnaire (every answer is a checkbox) ---------- */
+const KYC_SECTIONS = [
+  { t: 'Company details', q: [
+    { id: 'company', l: 'Tick each detail you have verified', req: 1, opts: ['Registered company name', 'CAC registration (RC) number', 'Tax identification number (TIN)', 'Registered business address', 'In business for more than 1 year'] },
+  ] },
+  { t: 'Contact person', q: [
+    { id: 'contact', l: 'Tick each contact detail you have confirmed', req: 1, opts: ['Full name', 'Role / job title', 'Business email', 'Phone number'] },
+  ] },
+  { t: 'Trade profile', q: [
+    { id: 'dir', l: 'Trade direction', req: 1, opts: ['Import', 'Export'] },
+    { id: 'vol', l: 'Expected monthly volume', opts: ['Under 5 TEU', '5 to 20 TEU', '20 to 50 TEU', 'Over 50 TEU', 'Air / LCL only'] },
+    { id: 'services', l: 'Services needed', req: 1, opts: ['Ocean freight', 'Air freight', 'Customs clearance', 'Haulage', 'Warehousing'] },
+  ] },
+  { t: 'Compliance', q: [
+    { id: 'compliance', l: 'Tick any that apply', opts: ['Cargo needs regulatory permits (NAFDAC, SON, NAQS)', 'Required permits are already in place', 'Shipments include dangerous goods', 'Trades with sanctioned countries or parties', 'A director or owner is a politically exposed person (PEP)'], col: 1 },
+  ] },
+  { t: 'Payment', q: [
+    { id: 'terms', l: 'Payment terms requested', req: 1, opts: ['Prepaid', '7 days credit', '14 days credit', '30 days credit'] },
+  ] },
+  { t: 'Documents received', q: [
+    { id: 'docs', l: 'Tick what the customer has provided', opts: ['CAC certificate', 'TIN certificate', "Director's valid ID", 'Proof of address (utility bill)', 'Form M / NXP or trade licence'] },
+  ] },
+];
+const KYC_Q = KYC_SECTIONS.flatMap(s => s.q);
+const LATER = ['qualified', 'quote', 'won'];
+/* KYC is required the first time a deal reaches Qualified or beyond */
+function needsKyc(x, target) { return LATER.includes(target) && !kyc[x.id] && ['prospect', 'contacted'].includes(x.stage) && !x.outcome; }
+const has = (a, id, o) => (a[id] || []).includes(o);
+function kycFlags(a) {
+  const f = [], c = a.compliance || [];
+  const unverified = 5 - (a.company || []).length;
+  if (unverified) f.push(`${unverified} company detail${unverified === 1 ? '' : 's'} not verified`);
+  if (c.includes('Trades with sanctioned countries or parties')) f.push('Trades with sanctioned countries or parties');
+  if (c.some(x => x.startsWith('A director'))) f.push('A director or owner is a politically exposed person');
+  if (c.includes('Shipments include dangerous goods')) f.push('Dangerous goods: needs DG handling approval');
+  if (c[0] === 'Cargo needs regulatory permits (NAFDAC, SON, NAQS)' && !c.includes('Required permits are already in place')) f.push('Regulatory permits not yet in place');
+  if ((a.docs || []).length < 3) f.push(`Only ${(a.docs || []).length} of 5 KYC documents received`);
+  return f;
+}
+const kycResult = a => kycFlags(a).length ? 'Needs review' : 'Passed';
+function kycField(q, a) {
+  return `<div class="field full" data-q="${q.id}"><label for="k-${q.id}-0">${esc(q.l)}${q.req ? ' <span class="req">*</span>' : ''}</label>
+    <div class="choices ${q.col ? 'col' : ''}" role="group">${q.opts.map((o, i) => `<label><input type="checkbox" id="k-${q.id}-${i}" name="k-${q.id}" value="${esc(o)}" ${has(a, q.id, o) ? 'checked' : ''}>${esc(o)}</label>`).join('')}</div></div>`;
+}
+function kycModal(dealId, pending, prefill, startStep = 0) {
+  const x = dealById(dealId);
+  const a = prefill || (kyc[dealId] && kyc[dealId].a) || {};
+  window._kycPending = pending || null;
+  const moving = !!pending, n = KYC_SECTIONS.length;
+  modal(`<div class="mh"><h3>KYC checks · ${esc(x.name)}</h3>
+      <p class="lead">${x.id} · ${moving ? `Answer each step to move the deal to ${kycTarget()}.` : 'Update the KYC answers for this deal.'} Tick the answers that apply, then press Next.</p>
+      <div class="kprog" aria-hidden="true">${KYC_SECTIONS.map((_, i) => `<span data-p="${i}"></span>`).join('')}</div>
+      <div class="kstep-l" id="k-stepl"></div></div>
+    <div class="mb">${KYC_SECTIONS.map((sec, i) => `<div class="kyc-sec" data-step="${i}" hidden><h4><span>${i + 1}</span>${sec.t}</h4>${sec.q.map(q => kycField(q, a)).join('')}
+      ${i === n - 1 ? `<label class="confirm" id="k-confirm-wrap"><input type="checkbox" id="k-confirm"><span>I confirm these details were checked against the customer's documents.</span></label>` : ''}</div>`).join('')}</div>
+    <div class="mf">
+      <button class="btn" id="k-back" onclick="kycGo(-1)">Back</button>
+      <button class="btn dark" id="k-next" onclick="kycGo(1, '${dealId}')">Next</button>
+      <div id="k-err" style="flex-basis:100%"></div>
+    </div>`, 'wide');
+  window._kycMoving = moving;
+  kycShow(startStep);
+}
+let kycStep = 0;
+const kycTarget = () => { const t = (window._kycPending || {}).stage || 'qualified'; return t === 'won' ? 'Closed · Won' : stageLabel(t); };
+function kycShow(i) {
+  const n = KYC_SECTIONS.length;
+  kycStep = i;
+  document.querySelectorAll('[data-step]').forEach(el => el.hidden = +el.dataset.step !== i);
+  document.querySelectorAll('[data-p]').forEach(el => el.className = +el.dataset.p < i ? 'done' : +el.dataset.p === i ? 'on' : '');
+  $('#k-stepl').textContent = `Step ${i + 1} of ${n} · ${KYC_SECTIONS[i].t}`;
+  $('#k-back').textContent = i === 0 ? 'Cancel' : 'Back';
+  $('#k-next').textContent = i < n - 1 ? 'Next' : (window._kycMoving ? `Submit KYC and move to ${kycTarget()}` : 'Save KYC');
+  $('#k-err').innerHTML = '';
+  $('.modal.wide').scrollTop = 0;
+  const first = $(`[data-step="${i}"] input`); if (first) first.focus();
+}
+/* Next checks only the current step; the last step submits */
+function kycGo(dir, dealId) {
+  if (dir < 0) { if (kycStep === 0) closeModal(); else kycShow(kycStep - 1); return; }
+  const sec = KYC_SECTIONS[kycStep];
+  const a = readKyc();
+  document.querySelectorAll('.field.bad').forEach(f => f.classList.remove('bad'));
+  const missing = sec.q.filter(q => q.req && !a[q.id].length);
+  missing.forEach(q => $(`[data-q="${q.id}"]`).classList.add('bad'));
+  if (missing.length) { $('#k-err').innerHTML = `<p class="err" style="margin:0">Tick at least one box in each highlighted question to continue.</p>`; return; }
+  if (kycStep < KYC_SECTIONS.length - 1) kycShow(kycStep + 1); else submitKyc(dealId);
+}
+function readKyc() {
+  const a = {};
+  KYC_Q.forEach(q => { a[q.id] = [...document.querySelectorAll(`input[name="k-${q.id}"]:checked`)].map(i => i.value); });
+  return a;
+}
+function submitKyc(dealId) {
+  const a = readKyc();
+  const ok = $('#k-confirm').checked;
+  $('#k-confirm-wrap').classList.toggle('bad', !ok);
+  if (!ok) { $('#k-err').innerHTML = '<p class="err" style="margin:0">Tick the confirmation to submit.</p>'; return; }
+  const x = dealById(dealId);
+  kyc[dealId] = { a, by: 'NM', at: nowIso() };
+  const res = kycResult(a), flags = kycFlags(a);
+  addHistory(dealId, { t: 'KYC questionnaire completed', tag: `KYC: ${res}`, comment: flags.length ? flags.join('. ') + '.' : undefined });
+  const p = window._kycPending;
+  const tgt = p ? (p.stage || 'qualified') : null;
+  if (p) { Object.assign(x, { name: p.name, amount: p.amount, cls: p.cls }); applyStage(x, tgt, p.comment); }
+  window._kycPending = null;
+  closeModal(); toast(p ? `KYC ${res.toLowerCase()} · deal moved to ${tgt === 'won' ? 'Closed · Won' : stageLabel(tgt)}` : 'KYC saved'); render();
+}
+function kycPanel(x) {
+  const k = kyc[x.id];
+  if (!k) {
+    if (!['qualified', 'quote'].includes(x.stage) || x.outcome) return '';
+    return `<div class="panel"><p class="sec-t">KYC checks</p>
+      <div class="empty-box">KYC has not been completed for this deal.<br><button class="btn sm primary" onclick="kycModal('${x.id}')">Complete KYC</button></div></div>`;
+  }
+  const a = k.a, res = kycResult(a), flags = kycFlags(a);
+  const show = v => Array.isArray(v) ? (v.length ? v.join(', ') : 'None') : (v || '—');
+  return `<div class="panel">
+    <div class="lk-head" style="margin-bottom:20px"><p class="sec-t" style="margin:0">KYC checks</p>
+      <div style="display:flex;gap:8px;align-items:center"><span class="pill ${res === 'Passed' ? 'pass' : 'await'}">${res === 'Passed' ? ICON.check + ' ' : ''}${res}</span><button class="btn sm" onclick="kycModal('${x.id}')">Update</button></div></div>
+    <div class="kyc-meta">Completed by ${OWNERS[k.by].name} · ${longD(k.at)} · ${time(k.at)}</div>
+    ${flags.length ? `<ul class="flags">${flags.map(f => `<li>${ICON.warn}${esc(f)}</li>`).join('')}</ul>` : ''}
+    <div class="kv">
+      <div><div class="k">Company details verified</div><div class="v">${(a.company || []).length} of 5</div></div>
+      <div><div class="k">Trade direction</div><div class="v">${esc(show(a.dir))}</div></div>
+      <div><div class="k">Payment terms</div><div class="v">${esc(show(a.terms))}</div></div>
+      <div><div class="k">Documents received</div><div class="v">${(a.docs || []).length} of 5</div></div>
+      <div><div class="k">Services needed</div><div class="v">${esc(show(a.services))}</div></div>
+    </div>
+    <details class="kyc-all"><summary>View all answers</summary>
+      ${KYC_SECTIONS.map(sec => `<div class="kyc-grp"><b>${sec.t}</b><ul>${sec.q.flatMap(q => q.opts.map(o => `<li class="${has(a, q.id, o) ? 'on' : ''}"><span class="bx">${has(a, q.id, o) ? ICON.check : ''}</span>${esc(o)}</li>`)).join('')}</ul></div>`).join('')}
+    </details>
+  </div>`;
+}
+
+let seq = 23;
+function newDealModal() {
+  modal(`<h3>New deal</h3><p class="lead">Starts in Prospect. ID: OP-26-11-0${seq}</p>
+    <div class="field"><label for="n-n">Company</label><input id="n-n" placeholder="e.g. Dangote Fertilizer"></div>
+    <div class="frow"><div class="field"><label for="n-ct">Contact</label><input id="n-ct"></div><div class="field"><label for="n-a">Amount (USD)</label><input id="n-a" type="number" min="0" value="0"></div></div>
+    <div class="frow"><div class="field"><label for="n-o">Owner</label><select id="n-o">${Object.entries(OWNERS).map(([k, o]) => `<option value="${k}" ${k === 'NM' ? 'selected' : ''}>${o.name}</option>`).join('')}</select></div>
+    <div class="field"><label for="n-c">Class</label><select id="n-c"><option>SME</option><option>Growth</option><option>Enterprise</option></select></div></div>
+    <div id="n-err"></div>
+    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="createDeal()">Create deal</button></div>`);
+}
+function createDeal() {
+  const name = $('#n-n').value.trim();
+  if (!name) { $('#n-err').innerHTML = '<p class="err">Enter the company name to create the deal.</p>'; return; }
+  const id = `OP-26-11-0${seq++}`;
+  deals.unshift({ id, name, amount: Math.max(0, +$('#n-a').value || 0), owner: $('#n-o').value, cls: $('#n-c').value, created: '2026-11-06', stage: 'prospect', contact: $('#n-ct').value.trim() || 'Not set', product: 'Not set' });
+  closeModal(); toast(`${id} created`); render();
+}
+
+render();
+</script>
+
+</html>

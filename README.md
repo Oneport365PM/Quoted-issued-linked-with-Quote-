@@ -1,6 +1,7 @@
 # OnePort365 CRM: deals linked to RFQs and quotes
 
 Click-through prototype in `prototype/index.html` (open it in a browser, no build step).
+`OnePort365-CRM-Prototype.html` is a standalone single-file copy to download and open offline.
 
 - RFQs, quotes and shipments are linked to deals by the system, never by hand.
 - Every deal has an ID (`OP-YY-MM-NNN`), shown on board cards, the list view and the deal page.
