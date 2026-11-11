@@ -22,9 +22,12 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   requested terms), next to the **Customer Payment Terms – Qualifying Checklist** in 3 steps: A. customer classification
   (tick one), B. onboarding requirements (tick all; the credit due-diligence item only applies to credit customers),
   C. clearance. "Finance and Internal Control involved from the onboarding stage" has been removed.
-- When Finance clicks **Clear and notify sales**, the deal moves to Qualified and the sales owner gets a notification
-  (bell in the top bar) saying the deal is qualified. Finance can instead **Send back to sales** with a comment; sales is
-  notified and can resend. The deal page shows the review status and the completed checklist.
+- On the review page, step A (the classification sales picked) is **read only**. Finance completes only their part:
+  step B onboarding requirements and step C clearance.
+- When Finance clicks **Clear and notify sales**, the sales owner gets a notification (bell in the top bar) that the deal
+  is **ready to move to Qualified**. The deal page shows a **Move to Qualified** button and the card a "Ready for Qualified"
+  badge; sales moves the deal without the checklist popping up again. A later move back into Qualified needs a new review.
+  Finance can instead **Send back to sales** with a comment; sales is notified and can resend.
 - The checklist pops up on every move into Qualified, even for a deal already with Finance (sending again updates the request).
 - Sample reviews: `OP-26-10-014` (Chevron) is awaiting Finance; the Manuchar deals are cleared.
 - Board cards can be dragged between columns (on touch screens: press and hold, then drag). Dropping any deal on Qualified opens
