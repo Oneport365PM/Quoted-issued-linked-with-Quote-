@@ -308,7 +308,7 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .terms-t { font-weight: 700; font-size: 15px; margin: 30px 0 14px; padding-top: 24px; border-top: 1px solid var(--line); }
 .terms { border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px 18px 42px; margin: 0; font-size: 14px; line-height: 1.7; }
 
-/* KYC questionnaire */
+/* Payment terms qualifying checklist */
 .modal.wide { width: min(780px, 100%); padding: 0; }
 .modal.wide .mh { padding: 22px 24px 14px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 1; }
 .modal.wide .mh .lead { margin: 0; }
@@ -316,7 +316,16 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .modal.wide .mf { padding: 14px 24px; border-top: 1px solid var(--line); position: sticky; bottom: 0; background: var(--surface); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .kyc-sec { padding: 18px 0 6px; }
 .kyc-sec:last-child { border-bottom: 0; }
-.kyc-sec h4 { margin: 0 0 14px; font-size: 13px; letter-spacing: .6px; text-transform: uppercase; color: var(--ink-2); display: flex; gap: 8px; align-items: center; }
+.kyc-sec h4 { margin: 0 0 14px; font-size: 15px; font-weight: 600; color: var(--ink); }
+.kyc-sec h4 small { font-size: 13px; font-weight: 400; color: var(--ink-2); }
+.ticks { display: flex; flex-direction: column; gap: 8px; }
+.tick { display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; cursor: pointer; font-size: 14px; font-weight: 400 !important; color: var(--ink) !important; line-height: 1.5; }
+.tick:has(input:checked) { border-color: var(--green); background: #f3faec; }
+.field .tick input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: var(--green); padding: 0; }
+.tick.off { opacity: .55; cursor: not-allowed; background: var(--surface-2); }
+.tick .na { display: none; font-style: normal; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.tick.off .na { display: block; }
+.field.bad .tick:not(.off):not(:has(input:checked)) { border-color: var(--red); }
 .kyc-sec h4 span { width: 22px; height: 22px; border-radius: 50%; background: var(--lime); color: var(--rail); display: grid; place-items: center; font-size: 11px; }
 .kgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
 .kgrid .full { grid-column: 1 / -1; }
@@ -352,8 +361,11 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .choices.col { flex-direction: column; align-items: flex-start; }
 .kyc-grp { margin-top: 14px; }
 .kyc-grp b { font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: var(--ink-2); }
-.kyc-grp ul { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
-.kyc-grp li { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.kyc-grp ul { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.kyc-grp li { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); }
+.kyc-grp li .bx { margin-top: 2px; }
+.kyc-grp b { text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--ink); }
+.kyc-grp li b { font-size: 13px; color: inherit; }
 .kyc-grp li.on { color: var(--ink); }
 .kyc-grp .bx { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #c9cdc5; display: grid; place-items: center; flex: none; }
 .kyc-grp li.on .bx { background: var(--green); border-color: var(--green); color: #fff; }
@@ -488,14 +500,11 @@ const QUOTE_LIST = [
 ];
 
 const MANUCHAR_KYC = {
-  company: ['Registered company name', 'CAC registration (RC) number', 'Tax identification number (TIN)', 'Registered business address', 'In business for more than 1 year'],
-  contact: ['Full name', 'Role / job title', 'Business email', 'Phone number'],
-  dir: ['Import'], vol: ['5 to 20 TEU'], services: ['Ocean freight', 'Customs clearance', 'Haulage'],
-  compliance: ['Cargo needs regulatory permits (NAFDAC, SON, NAQS)'],
-  terms: ['14 days credit'],
-  docs: ['CAC certificate', 'TIN certificate', "Director's valid ID", 'Proof of address (utility bill)'],
+  cls: ['adv'],
+  onb: ['fin', 'framework', 'wc', 'deviation', 'documented'],
+  clr: ['clear'],
 };
-/* KYC answers per deal; filled when a deal moves to Qualified */
+/* Payment terms qualifying checklist per deal; completed when a deal moves to Qualified */
 const kyc = {
   'OP-26-11-023': { a: MANUCHAR_KYC, by: 'KA', at: '2026-11-04T16:05' },
   'OP-26-11-024': { a: MANUCHAR_KYC, by: 'KA', at: '2026-11-04T14:55' },
@@ -504,13 +513,13 @@ const kyc = {
 const history = {
   'OP-26-11-023': [
     { t: 'Moved deal from Contacted to Qualified', by: 'KA', at: '2026-11-04T16:10', tag: 'Qualified', comment: 'Customer has approved for payment.' },
-    { t: 'KYC questionnaire completed', by: 'KA', at: '2026-11-04T16:05', tag: 'KYC: Needs review', comment: 'NAFDAC permit still in progress.' },
+    { t: 'Payment terms checklist completed', by: 'KA', at: '2026-11-04T16:05', tag: 'Cleared', comment: 'Existing Advance Payment customer: minimum 90% upfront.' },
     { t: 'Moved deal from Prospect to Contacted', by: 'KA', at: '2026-11-03T12:30', tag: 'Contacted' },
   ],
   'OP-26-11-024': [
     { t: 'Moved deal from Qualified to Quote Issued', by: 'KA', at: '2026-11-06T10:12', tag: 'Quote Issued', comment: 'Quote sent to Ekene. Valid for 7 days.' },
     { t: 'Moved deal from Prospect to Qualified', by: 'KA', at: '2026-11-04T15:00', tag: 'Qualified' },
-    { t: 'KYC questionnaire completed', by: 'KA', at: '2026-11-04T14:55', tag: 'KYC: Needs review', comment: 'NAFDAC permit still in progress.' },
+    { t: 'Payment terms checklist completed', by: 'KA', at: '2026-11-04T14:55', tag: 'Cleared', comment: 'Existing Advance Payment customer: minimum 90% upfront.' },
   ],
   'OP-26-10-013': [
     { t: 'Deal marked Won', by: 'NM', at: '2026-10-09T09:44', tag: 'Won', tagCls: 'won', comment: 'Won' },
@@ -529,9 +538,9 @@ const slash = s => { const x = d(s); return `${pad(x.getDate())}/${pad(x.getMont
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const longD = s => { const x = d(s); return `${MON[x.getMonth()]} ${x.getDate()}, ${x.getFullYear()}`; };
 const time = s => { const x = d(s); let h = x.getHours(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${pad(x.getMinutes())} ${ap}`; };
-const TODAY = new Date('2026-11-06T12:00');
+const TODAY = new Date();
 const daysAgo = s => Math.round((TODAY - d(s)) / 864e5);
-const nowIso = () => { const x = new Date(); return `2026-11-06T${pad(x.getHours())}:${pad(x.getMinutes())}`; };
+const nowIso = () => { const x = new Date(); return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}T${pad(x.getHours())}:${pad(x.getMinutes())}`; };
 const av = k => `<span class="av" style="background:${OWNERS[k].color}">${k}</span>`;
 const dealById = id => deals.find(x => x.id === id);
 /* Rule: an RFQ is tied to a deal in Qualified, a quote is tied to a deal in Quote Issued. A deal only shows its own records. */
@@ -668,7 +677,7 @@ function listHtml(list) {
       <td><div style="display:flex;gap:6px">${linkChips(x) || '<span style="color:var(--muted)">None</span>'}</div></td>
       <td class="tnum">${dmy(x.created)}</td></tr>`).join('')}</tbody></table></div>`;
 }
-/* Drag a card to another column. Entering Qualified for the first time runs the KYC checklist first. */
+/* Drag a card to another column. Entering Qualified for the first time runs the payment terms checklist first. */
 function moveDeal(id, target) {
   const x = dealById(id);
   if (!x || target === x.stage) return;
@@ -905,8 +914,8 @@ function editDealModal(dealId) {
     <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" id="e-save" onclick="saveDeal('${x.id}')">Save changes</button></div>`);
   const chk = () => {
     const s = $('#e-s').value, kycNext = needsKyc(x, s);
-    $('#e-err').innerHTML = kycNext ? `<div class="callout ok">${ICON.check}<span>Next you'll complete the KYC questionnaire. The deal moves to Qualified when it's submitted.</span></div>` : '';
-    $('#e-save').textContent = kycNext ? 'Continue to KYC' : 'Save changes';
+    $('#e-err').innerHTML = kycNext ? `<div class="callout ok">${ICON.check}<span>Next you'll complete the payment terms qualifying checklist. The deal moves to Qualified when it's submitted.</span></div>` : '';
+    $('#e-save').textContent = kycNext ? 'Continue to checklist' : 'Save changes';
   };
   $('#e-s').addEventListener('change', chk); chk();
 }
@@ -927,67 +936,73 @@ function saveDeal(dealId) {
   }
   closeModal(); toast('Deal updated'); render();
 }
-/* ---------- KYC questionnaire (every answer is a checkbox) ---------- */
+/* ---------- Customer Payment Terms: Qualifying Checklist ---------- */
 const KYC_SECTIONS = [
-  { t: 'Company details', q: [
-    { id: 'company', l: 'Tick each detail you have verified', req: 1, opts: ['Registered company name', 'CAC registration (RC) number', 'Tax identification number (TIN)', 'Registered business address', 'In business for more than 1 year'] },
+  { t: 'Customer classification', h: 'A. Customer classification', hint: 'Tick one', q: [
+    { id: 'cls', one: 1, opts: [
+      { v: 'new', b: 'New customer:', t: 'Cash Before Service (full payment before service)' },
+      { v: 'adv', b: 'Existing Advance Payment customer:', t: 'minimum 90% paid upfront before service' },
+      { v: 'credit', b: 'Credit customer:', t: 'credit assessment completed <b>and</b> formal approval obtained from Internal Control or written approval from the CEO' },
+    ] },
   ] },
-  { t: 'Contact person', q: [
-    { id: 'contact', l: 'Tick each contact detail you have confirmed', req: 1, opts: ['Full name', 'Role / job title', 'Business email', 'Phone number'] },
+  { t: 'Onboarding requirements', h: 'B. Onboarding requirements', hint: 'Tick all', q: [
+    { id: 'onb', all: 1, opts: [
+      { v: 'fin', t: 'Finance and Internal Control involved from the onboarding stage' },
+      { v: 'framework', t: 'Proposed payment terms align with the approved payment framework' },
+      { v: 'wc', t: 'Finance has reviewed working capital and cash-flow impact' },
+      { v: 'dd', t: 'Internal Control has completed customer due diligence and credit assessment (credit customers only)', creditOnly: 1 },
+      { v: 'deviation', t: 'Any deviation from standard terms identified and escalated for CEO approval' },
+      { v: 'documented', t: 'Payment terms documented, approved and shared with all relevant stakeholders' },
+    ] },
   ] },
-  { t: 'Trade profile', q: [
-    { id: 'dir', l: 'Trade direction', req: 1, opts: ['Import', 'Export'] },
-    { id: 'vol', l: 'Expected monthly volume', opts: ['Under 5 TEU', '5 to 20 TEU', '20 to 50 TEU', 'Over 50 TEU', 'Air / LCL only'] },
-    { id: 'services', l: 'Services needed', req: 1, opts: ['Ocean freight', 'Air freight', 'Customs clearance', 'Haulage', 'Warehousing'] },
-  ] },
-  { t: 'Compliance', q: [
-    { id: 'compliance', l: 'Tick any that apply', opts: ['Cargo needs regulatory permits (NAFDAC, SON, NAQS)', 'Required permits are already in place', 'Shipments include dangerous goods', 'Trades with sanctioned countries or parties', 'A director or owner is a politically exposed person (PEP)'], col: 1 },
-  ] },
-  { t: 'Payment', q: [
-    { id: 'terms', l: 'Payment terms requested', req: 1, opts: ['Prepaid', '7 days credit', '14 days credit', '30 days credit'] },
-  ] },
-  { t: 'Documents received', q: [
-    { id: 'docs', l: 'Tick what the customer has provided', opts: ['CAC certificate', 'TIN certificate', "Director's valid ID", 'Proof of address (utility bill)', 'Form M / NXP or trade licence'] },
+  { t: 'Clearance', h: 'C. Clearance', q: [
+    { id: 'clr', all: 1, opts: [{ v: 'clear', t: 'All applicable boxes above are ticked. Service may proceed.' }] },
   ] },
 ];
 const KYC_Q = KYC_SECTIONS.flatMap(s => s.q);
+const optText = o => o.b ? `<b>${esc(o.b)}</b> ${o.t}` : esc(o.t).replace('(credit customers only)', '<i>(credit customers only)</i>');
 const LATER = ['qualified', 'quote', 'won'];
-/* KYC is required the first time a deal reaches Qualified or beyond */
+/* The checklist is required the first time a deal reaches Qualified or beyond */
 function needsKyc(x, target) { return LATER.includes(target) && !kyc[x.id] && ['prospect', 'contacted'].includes(x.stage) && !x.outcome; }
-const has = (a, id, o) => (a[id] || []).includes(o);
-function kycFlags(a) {
-  const f = [], c = a.compliance || [];
-  const unverified = 5 - (a.company || []).length;
-  if (unverified) f.push(`${unverified} company detail${unverified === 1 ? '' : 's'} not verified`);
-  if (c.includes('Trades with sanctioned countries or parties')) f.push('Trades with sanctioned countries or parties');
-  if (c.some(x => x.startsWith('A director'))) f.push('A director or owner is a politically exposed person');
-  if (c.includes('Shipments include dangerous goods')) f.push('Dangerous goods: needs DG handling approval');
-  if (c[0] === 'Cargo needs regulatory permits (NAFDAC, SON, NAQS)' && !c.includes('Required permits are already in place')) f.push('Regulatory permits not yet in place');
-  if ((a.docs || []).length < 3) f.push(`Only ${(a.docs || []).length} of 5 KYC documents received`);
-  return f;
-}
-const kycResult = a => kycFlags(a).length ? 'Needs review' : 'Passed';
+const has = (a, id, v) => (a[id] || []).includes(v);
+const isCredit = a => has(a, 'cls', 'credit');
+const CLS_LABEL = { new: 'New customer · Cash Before Service', adv: 'Existing Advance Payment customer · min. 90% upfront', credit: 'Credit customer · approved credit terms' };
+const kycResult = () => 'Cleared';
 function kycField(q, a) {
-  return `<div class="field full" data-q="${q.id}"><label for="k-${q.id}-0">${esc(q.l)}${q.req ? ' <span class="req">*</span>' : ''}</label>
-    <div class="choices ${q.col ? 'col' : ''}" role="group">${q.opts.map((o, i) => `<label><input type="checkbox" id="k-${q.id}-${i}" name="k-${q.id}" value="${esc(o)}" ${has(a, q.id, o) ? 'checked' : ''}>${esc(o)}</label>`).join('')}</div></div>`;
+  return `<div class="field full" data-q="${q.id}"><div class="ticks" role="group">${q.opts.map((o, i) => `<label class="tick" data-v="${o.v}">
+      <input type="checkbox" id="k-${q.id}-${i}" name="k-${q.id}" value="${o.v}" ${has(a, q.id, o.v) ? 'checked' : ''} ${q.one ? `onchange="kycOne(this)"` : ''}${q.id === 'onb' ? ` onchange="kycNa()"` : ''}>
+      <span>${optText(o)}${o.creditOnly ? '<em class="na">Not applicable: customer is not a credit customer</em>' : ''}</span></label>`).join('')}</div></div>`;
+}
+/* Section A: only one classification can be ticked */
+function kycOne(el) {
+  if (el.checked) document.querySelectorAll(`input[name="${el.name}"]`).forEach(i => { if (i !== el) i.checked = false; });
+  kycNa();
+}
+/* The credit-only requirement is greyed out unless the customer is a credit customer */
+function kycNa() {
+  const credit = !!document.querySelector('input[name="k-cls"][value="credit"]:checked');
+  const row = document.querySelector('.tick[data-v="dd"]');
+  if (!row) return;
+  row.classList.toggle('off', !credit);
+  const box = row.querySelector('input'); box.disabled = !credit; if (!credit) box.checked = false;
 }
 function kycModal(dealId, pending, prefill, startStep = 0) {
   const x = dealById(dealId);
   const a = prefill || (kyc[dealId] && kyc[dealId].a) || {};
   window._kycPending = pending || null;
   const moving = !!pending, n = KYC_SECTIONS.length;
-  modal(`<div class="mh"><h3>KYC checks · ${esc(x.name)}</h3>
-      <p class="lead">${x.id} · ${moving ? `Answer each step to move the deal to ${kycTarget()}.` : 'Update the KYC answers for this deal.'} Tick the answers that apply, then press Next.</p>
+  modal(`<div class="mh"><h3>Customer Payment Terms · Qualifying Checklist</h3>
+      <p class="lead">${esc(x.name)} · ${x.id}<br><i>Complete before any payment terms are agreed or communicated to the customer.</i></p>
       <div class="kprog" aria-hidden="true">${KYC_SECTIONS.map((_, i) => `<span data-p="${i}"></span>`).join('')}</div>
       <div class="kstep-l" id="k-stepl"></div></div>
-    <div class="mb">${KYC_SECTIONS.map((sec, i) => `<div class="kyc-sec" data-step="${i}" hidden><h4><span>${i + 1}</span>${sec.t}</h4>${sec.q.map(q => kycField(q, a)).join('')}
-      ${i === n - 1 ? `<label class="confirm" id="k-confirm-wrap"><input type="checkbox" id="k-confirm"><span>I confirm these details were checked against the customer's documents.</span></label>` : ''}</div>`).join('')}</div>
+    <div class="mb">${KYC_SECTIONS.map((sec, i) => `<div class="kyc-sec" data-step="${i}" hidden><h4>${sec.h}${sec.hint ? ` <small>(${sec.hint.toLowerCase()})</small>` : ''}</h4>${sec.q.map(q => kycField(q, a)).join('')}</div>`).join('')}</div>
     <div class="mf">
       <button class="btn" id="k-back" onclick="kycGo(-1)">Back</button>
       <button class="btn dark" id="k-next" onclick="kycGo(1, '${dealId}')">Next</button>
       <div id="k-err" style="flex-basis:100%"></div>
     </div>`, 'wide');
   window._kycMoving = moving;
+  kycNa();
   kycShow(startStep);
 }
 let kycStep = 0;
@@ -999,7 +1014,7 @@ function kycShow(i) {
   document.querySelectorAll('[data-p]').forEach(el => el.className = +el.dataset.p < i ? 'done' : +el.dataset.p === i ? 'on' : '');
   $('#k-stepl').textContent = `Step ${i + 1} of ${n} · ${KYC_SECTIONS[i].t}`;
   $('#k-back').textContent = i === 0 ? 'Cancel' : 'Back';
-  $('#k-next').textContent = i < n - 1 ? 'Next' : (window._kycMoving ? `Submit KYC and move to ${kycTarget()}` : 'Save KYC');
+  $('#k-next').textContent = i < n - 1 ? 'Next' : (window._kycMoving ? `Clear and move to ${kycTarget()}` : 'Save checklist');
   $('#k-err').innerHTML = '';
   $('.modal.wide').scrollTop = 0;
   const first = $(`[data-step="${i}"] input`); if (first) first.focus();
@@ -1010,9 +1025,15 @@ function kycGo(dir, dealId) {
   const sec = KYC_SECTIONS[kycStep];
   const a = readKyc();
   document.querySelectorAll('.field.bad').forEach(f => f.classList.remove('bad'));
-  const missing = sec.q.filter(q => q.req && !a[q.id].length);
-  missing.forEach(q => $(`[data-q="${q.id}"]`).classList.add('bad'));
-  if (missing.length) { $('#k-err').innerHTML = `<p class="err" style="margin:0">Tick at least one box in each highlighted question to continue.</p>`; return; }
+  let msg = '';
+  sec.q.forEach(q => {
+    const need = q.opts.filter(o => !(o.creditOnly && !isCredit(a))).map(o => o.v);
+    const got = a[q.id];
+    if (q.one && got.length !== 1) msg = 'Tick one customer classification to continue.';
+    if (q.all && need.some(v => !got.includes(v))) msg = q.id === 'clr' ? 'Tick the clearance box to confirm service may proceed.' : `Tick all ${need.length} applicable requirements to continue. ${need.length - need.filter(v => got.includes(v)).length} still unticked.`;
+    if (msg) $(`[data-q="${q.id}"]`).classList.add('bad');
+  });
+  if (msg) { $('#k-err').innerHTML = `<p class="err" style="margin:0">${msg}</p>`; return; }
   if (kycStep < KYC_SECTIONS.length - 1) kycShow(kycStep + 1); else submitKyc(dealId);
 }
 function readKyc() {
@@ -1022,42 +1043,33 @@ function readKyc() {
 }
 function submitKyc(dealId) {
   const a = readKyc();
-  const ok = $('#k-confirm').checked;
-  $('#k-confirm-wrap').classList.toggle('bad', !ok);
-  if (!ok) { $('#k-err').innerHTML = '<p class="err" style="margin:0">Tick the confirmation to submit.</p>'; return; }
   const x = dealById(dealId);
   kyc[dealId] = { a, by: 'NM', at: nowIso() };
-  const res = kycResult(a), flags = kycFlags(a);
-  addHistory(dealId, { t: 'KYC questionnaire completed', tag: `KYC: ${res}`, comment: flags.length ? flags.join('. ') + '.' : undefined });
+  addHistory(dealId, { t: 'Payment terms checklist completed', tag: 'Cleared', comment: CLS_LABEL[a.cls[0]] + '.' });
   const p = window._kycPending;
   const tgt = p ? (p.stage || 'qualified') : null;
   if (p) { Object.assign(x, { name: p.name, amount: p.amount, cls: p.cls }); applyStage(x, tgt, p.comment); }
   window._kycPending = null;
-  closeModal(); toast(p ? `KYC ${res.toLowerCase()} · deal moved to ${tgt === 'won' ? 'Closed · Won' : stageLabel(tgt)}` : 'KYC saved'); render();
+  closeModal(); toast(p ? `Checklist cleared · deal moved to ${tgt === 'won' ? 'Closed · Won' : stageLabel(tgt)}` : 'Checklist saved'); render();
 }
 function kycPanel(x) {
   const k = kyc[x.id];
   if (!k) {
     if (!['qualified', 'quote'].includes(x.stage) || x.outcome) return '';
-    return `<div class="panel"><p class="sec-t">KYC checks</p>
-      <div class="empty-box">KYC has not been completed for this deal.<br><button class="btn sm primary" onclick="kycModal('${x.id}')">Complete KYC</button></div></div>`;
+    return `<div class="panel"><p class="sec-t">Payment terms checklist</p>
+      <div class="empty-box">The qualifying checklist has not been completed for this deal.<br><button class="btn sm primary" onclick="kycModal('${x.id}')">Complete checklist</button></div></div>`;
   }
-  const a = k.a, res = kycResult(a), flags = kycFlags(a);
-  const show = v => Array.isArray(v) ? (v.length ? v.join(', ') : 'None') : (v || '—');
+  const a = k.a;
   return `<div class="panel">
-    <div class="lk-head" style="margin-bottom:20px"><p class="sec-t" style="margin:0">KYC checks</p>
-      <div style="display:flex;gap:8px;align-items:center"><span class="pill ${res === 'Passed' ? 'pass' : 'await'}">${res === 'Passed' ? ICON.check + ' ' : ''}${res}</span><button class="btn sm" onclick="kycModal('${x.id}')">Update</button></div></div>
+    <div class="lk-head" style="margin-bottom:20px"><p class="sec-t" style="margin:0">Payment terms checklist</p>
+      <div style="display:flex;gap:8px;align-items:center"><span class="pill pass">${ICON.check} Cleared</span><button class="btn sm" onclick="kycModal('${x.id}')">Update</button></div></div>
     <div class="kyc-meta">Completed by ${OWNERS[k.by].name} · ${longD(k.at)} · ${time(k.at)}</div>
-    ${flags.length ? `<ul class="flags">${flags.map(f => `<li>${ICON.warn}${esc(f)}</li>`).join('')}</ul>` : ''}
-    <div class="kv">
-      <div><div class="k">Company details verified</div><div class="v">${(a.company || []).length} of 5</div></div>
-      <div><div class="k">Trade direction</div><div class="v">${esc(show(a.dir))}</div></div>
-      <div><div class="k">Payment terms</div><div class="v">${esc(show(a.terms))}</div></div>
-      <div><div class="k">Documents received</div><div class="v">${(a.docs || []).length} of 5</div></div>
-      <div><div class="k">Services needed</div><div class="v">${esc(show(a.services))}</div></div>
-    </div>
-    <details class="kyc-all"><summary>View all answers</summary>
-      ${KYC_SECTIONS.map(sec => `<div class="kyc-grp"><b>${sec.t}</b><ul>${sec.q.flatMap(q => q.opts.map(o => `<li class="${has(a, q.id, o) ? 'on' : ''}"><span class="bx">${has(a, q.id, o) ? ICON.check : ''}</span>${esc(o)}</li>`)).join('')}</ul></div>`).join('')}
+    <div class="kv"><div class="full"><div class="k">Customer classification</div><div class="v">${esc(CLS_LABEL[a.cls[0]])}</div></div></div>
+    <details class="kyc-all"><summary>View checklist</summary>
+      ${KYC_SECTIONS.map(sec => `<div class="kyc-grp"><b>${sec.h}</b><ul>${sec.q.flatMap(q => q.opts.map(o => {
+        const na = o.creditOnly && !isCredit(a), on = has(a, q.id, o.v);
+        return `<li class="${on ? 'on' : ''}"><span class="bx">${on ? ICON.check : ''}</span><span>${optText(o)}${na ? ' · not applicable' : ''}</span></li>`;
+      })).join('')}</ul></div>`).join('')}
     </details>
   </div>`;
 }
