@@ -97,6 +97,7 @@ a.btn { text-decoration: none; color: var(--ink); }
 .col.over { background: #eef6e2; box-shadow: 0 0 0 2px var(--lime) inset; }
 .card[draggable="true"] { cursor: grab; }
 .card.dragging { opacity: .45; }
+.card.ghost { position: fixed; z-index: 70; pointer-events: none; opacity: .95; box-shadow: 0 12px 30px rgba(16,40,20,.25); transform: rotate(2deg); }
 .card:hover { border-color: #cfd8c8; box-shadow: 0 4px 14px rgba(16,40,20,.08); }
 .card .top { padding: 12px 14px 12px; border-bottom: 1px solid var(--line); }
 .card .did { font-size: 11px; color: var(--muted); letter-spacing: .3px; margin-bottom: 4px; }
@@ -705,6 +706,39 @@ function doClose(id) {
   applyStage(x, out, $('#cl-c').value.trim() || undefined);
   closeModal(); toast(`${x.name} marked ${out === 'won' ? 'Won' : 'Lost'}`); render();
 }
+/* Touch screens: press and hold a card, then drag it to a column */
+function touchDrag(card) {
+  let timer, ghost, active = false, sx, sy;
+  const colAt = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest('.col'); };
+  const clear = () => { document.querySelectorAll('.col.over').forEach(c => c.classList.remove('over')); };
+  card.addEventListener('touchstart', e => {
+    const t = e.touches[0]; sx = t.clientX; sy = t.clientY;
+    timer = setTimeout(() => {
+      active = true; card.classList.add('dragging');
+      const r = card.getBoundingClientRect();
+      ghost = card.cloneNode(true); ghost.className = 'card ghost';
+      Object.assign(ghost.style, { width: r.width + 'px', left: (sx - r.width / 2) + 'px', top: (sy - 30) + 'px' });
+      document.body.appendChild(ghost);
+      if (navigator.vibrate) try { navigator.vibrate(15); } catch (_) {}
+    }, 350);
+  }, { passive: true });
+  card.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (!active) { if (Math.abs(t.clientX - sx) > 8 || Math.abs(t.clientY - sy) > 8) clearTimeout(timer); return; }
+    e.preventDefault();
+    ghost.style.left = (t.clientX - ghost.offsetWidth / 2) + 'px'; ghost.style.top = (t.clientY - 30) + 'px';
+    clear(); const c = colAt(t.clientX, t.clientY); if (c) c.classList.add('over');
+  }, { passive: false });
+  const end = e => {
+    clearTimeout(timer);
+    if (!active) return;
+    e.preventDefault();
+    const t = e.changedTouches[0]; const c = colAt(t.clientX, t.clientY);
+    active = false; card.classList.remove('dragging'); ghost.remove(); clear();
+    if (c) moveDeal(card.dataset.id, c.dataset.stage);
+  };
+  card.addEventListener('touchend', end); card.addEventListener('touchcancel', end);
+}
 function bindPipeline() {
   const q = $('#q');
   q.addEventListener('input', () => { ui.q = q.value; const pos = q.selectionStart; render(); const n = $('#q'); n.focus(); n.setSelectionRange(pos, pos); });
@@ -718,6 +752,7 @@ function bindPipeline() {
     c.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', c.dataset.id); e.dataTransfer.effectAllowed = 'move'; c.classList.add('dragging'); });
     c.addEventListener('dragend', () => { c.classList.remove('dragging'); document.querySelectorAll('.col.over').forEach(x => x.classList.remove('over')); });
   });
+  document.querySelectorAll('.card').forEach(touchDrag);
   document.querySelectorAll('.col').forEach(col => {
     col.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; col.classList.add('over'); });
     col.addEventListener('dragleave', e => { if (!col.contains(e.relatedTarget)) col.classList.remove('over'); });
@@ -956,8 +991,11 @@ const KYC_SECTIONS = [
 const KYC_Q = KYC_SECTIONS.flatMap(s => s.q);
 const optText = o => o.b ? `<b>${esc(o.b)}</b> ${o.t}` : esc(o.t).replace('(credit customers only)', '<i>(credit customers only)</i>');
 const LATER = ['qualified', 'quote', 'won'];
-/* The checklist is required the first time a deal reaches Qualified or beyond */
-function needsKyc(x, target) { return LATER.includes(target) && !kyc[x.id] && ['prospect', 'contacted'].includes(x.stage) && !x.outcome; }
+/* The checklist pops up every time a deal is moved into Qualified, and when a deal skips past Qualified without one */
+function needsKyc(x, target) {
+  if (target === 'qualified') return x.stage !== 'qualified' || !!x.outcome;
+  return LATER.includes(target) && !kyc[x.id] && ['prospect', 'contacted'].includes(x.stage) && !x.outcome;
+}
 const has = (a, id, v) => (a[id] || []).includes(v);
 const isCredit = a => has(a, 'cls', 'credit');
 const CLS_LABEL = { new: 'New customer · Cash Before Service', adv: 'Existing Advance Payment customer · min. 90% upfront', credit: 'Credit customer · approved credit terms' };
@@ -982,7 +1020,9 @@ function kycNa() {
 }
 function kycModal(dealId, pending, prefill, startStep = 0) {
   const x = dealById(dealId);
-  const a = prefill || (kyc[dealId] && kyc[dealId].a) || {};
+  const prev = prefill || (kyc[dealId] && kyc[dealId].a) || {};
+  /* when moving, earlier answers are kept but clearance must be ticked again */
+  const a = pending ? { ...prev, clr: [] } : prev;
   window._kycPending = pending || null;
   const moving = !!pending, n = KYC_SECTIONS.length;
   modal(`<div class="mh"><h3>Customer Payment Terms · Qualifying Checklist</h3>
