@@ -404,6 +404,20 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .pill.back { background: var(--red-soft); color: var(--red); font-weight: 600; }
 .callout.bad { background: var(--red-soft); color: var(--red); }
 .callout a { color: inherit; font-weight: 600; }
+.sf-hint { font-size: 12.5px; color: var(--ink-2); margin: 4px 0 0; }
+.mail { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 13px; }
+.mail-h { background: var(--surface-2); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid var(--line); }
+.mail-h div { overflow-wrap: anywhere; }
+.mail-h span { display: inline-block; width: 64px; color: var(--muted); font-size: 12px; }
+.mail-b { padding: 14px; line-height: 1.55; color: var(--ink-2); }
+.mail-b p { margin: 0 0 10px; }
+.mail-t { min-width: 0; width: 100%; margin: 4px 0 14px; }
+.mail-t th, .mail-t td { white-space: normal; padding: 6px 0; font-size: 13px; background: none; text-transform: none; letter-spacing: 0; vertical-align: top; overflow-wrap: anywhere; }
+.mail-t th { width: 120px; color: var(--muted); font-weight: 500; padding-right: 12px; }
+.mail-t td { color: var(--ink); }
+.mail-t tbody tr { cursor: default; }
+.mail-t tbody tr:hover { background: none; }
+.mail-btn { display: inline-block; background: var(--rail); color: #fff; border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 12.5px; }
 .fl { display: block; font-size: 12px; font-weight: 600; color: var(--ink-2); margin: 16px 0 8px; }
 .tab .cnt { background: var(--lime); color: var(--rail); border-radius: 999px; font-size: 11px; font-weight: 700; padding: 1px 8px; }
 .tab:not(.on) .cnt { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
@@ -1135,29 +1149,81 @@ function statusPill(r) {
   return '<span class="pill review">Awaiting review</span>';
 }
 
-/* ---- sales side: send a deal to Finance ---- */
+/* Sales picks the customer classification (checklist step A), then the customer profile is emailed to Finance */
+const FINANCE_MAIL = 'finance@oneport365.com';
 function sendFinanceModal(dealId, pending) {
   const x = dealById(dealId), r = reviews[dealId] || {};
   window._pending = pending || {};
-  modal(`<h3>Send to Finance for review</h3><p class="lead">${esc(x.name)} · ${x.id}</p>
-    <div class="callout ok">${ICON.check}<span>Finance reviews the customer profile and completes the payment terms qualifying checklist. The deal moves to Qualified once Finance clears it, and ${esc(OWNERS[x.owner].name)} is notified.</span></div>
-    <span class="fl">Payment terms the customer is asking for</span>
-    <div class="opts" id="sf-terms">${Object.entries(TERMS).map(([k, o]) => `<label class="opt"><input type="radio" name="sf-t" value="${k}" ${r.terms === k ? 'checked' : ''}><div><b>${o.t}</b><div>${o.d}</div></div></label>`).join('')}</div>
-    <div class="field"><label for="sf-tn">Terms detail</label><input id="sf-tn" placeholder="e.g. 30 days from invoice" value="${esc(r.termsNote || '')}"></div>
-    <div class="field"><label for="sf-n">Note to Finance</label><textarea id="sf-n" placeholder="Anything Finance should know about this customer">${esc(r.note || '')}</textarea></div>
-    <div id="sf-err"></div>
-    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" onclick="sendFinance('${dealId}')">Send to Finance</button></div>`);
+  const a = { cls: r.terms ? [r.terms] : [] };
+  modal(`<div class="mh"><h3>Customer Payment Terms · Qualifying Checklist</h3>
+      <p class="lead">${esc(x.name)} · ${x.id}<br><i>Complete before any payment terms are agreed or communicated to the customer.</i></p>
+      <div class="kprog" aria-hidden="true"><span class="on" id="sf-p1"></span><span></span><span></span></div>
+      <div class="kstep-l" id="sf-l">Step 1 of 3 · Customer classification</div></div>
+    <div class="mb">
+      <div class="kyc-sec" id="sf-s1"><h4>${KYC_SECTIONS[0].h} <small>(tick one)</small></h4>${kycField(KYC_SECTIONS[0].q[0], a)}
+        <p class="sf-hint">Steps 2 and 3 are completed by Finance. Once you tick one, the customer profile is emailed to Finance to review.</p></div>
+      <div class="kyc-sec" id="sf-s2" hidden></div>
+    </div>
+    <div class="mf">
+      <button class="btn" id="sf-back" onclick="sfBack()">Cancel</button>
+      <button class="btn dark" id="sf-next" onclick="sfNext('${dealId}')">Next</button>
+      <div id="sf-err" style="flex-basis:100%"></div>
+    </div>`, 'wide');
+  $('.mf #sf-back').style.marginLeft = 'auto';
+}
+function sfBack() {
+  if ($('#sf-s2').hidden) return closeModal();
+  $('#sf-s2').hidden = true; $('#sf-s1').hidden = false;
+  $('#sf-l').textContent = 'Step 1 of 3 · Customer classification';
+  $('#sf-back').textContent = 'Cancel'; $('#sf-next').textContent = 'Next'; $('#sf-err').innerHTML = '';
+}
+const sfCls = () => { const el = document.querySelector('input[name="k-cls"]:checked'); return el && el.value; };
+function sfNext(dealId) {
+  if (!$('#sf-s2').hidden) return sendFinance(dealId);
+  const cls = sfCls();
+  if (!cls) { $('[data-q="cls"]').classList.add('bad'); $('#sf-err').innerHTML = '<p class="err" style="margin:0">Tick one customer classification to continue.</p>'; return; }
+  const x = dealById(dealId), p = window._pending || {}, c = companyOf(x), ct = contactOf(x), r = reviews[dealId] || {};
+  const row = (k, v) => `<tr><th>${k}</th><td>${v || '<span style="color:var(--muted)">Not on file</span>'}</td></tr>`;
+  $('#sf-s2').innerHTML = `<h4>Email to Finance</h4>
+    <div class="mail">
+      <div class="mail-h">
+        <div><span>From</span>${esc(OWNERS.NM.name)} (Sales)</div>
+        <div><span>To</span>Finance team &lt;${FINANCE_MAIL}&gt;</div>
+        <div><span>Subject</span><b>Customer profile review: ${esc(p.name || x.name)} · ${x.id}</b></div>
+      </div>
+      <div class="mail-b">
+        <p>Hi Finance,</p>
+        <p>${esc(p.name || x.name)} is moving from ${esc(stageName(x))} to Qualified. Please review the customer profile and complete steps B and C of the payment terms qualifying checklist.</p>
+        <table class="mail-t"><tbody>
+          ${row('Company', esc(p.name || x.name))}
+          ${row('Industry', esc(c.industry))}
+          ${row('RC number', esc(c.rc))}
+          ${row('Contact', esc(x.contact) + (ct.role ? ` · ${esc(ct.role)}` : ''))}
+          ${row('Email', esc(ct.email))}
+          ${row('Phone', esc(ct.phone))}
+          ${row('Product', esc(x.product))}
+          ${row('Deal amount', money(p.amount ?? x.amount))}
+          ${row('Route', esc(x.route))}
+          ${row('Classification', `<b>${esc(CLS_LABEL[cls])}</b> (selected by sales)`)}
+        </tbody></table>
+        <span class="mail-btn">Open customer profile review</span>
+      </div>
+    </div>
+    <div class="field" style="margin-top:14px"><label for="sf-n">Note to Finance (optional)</label><textarea id="sf-n" placeholder="Anything Finance should know about this customer">${esc(r.note || '')}</textarea></div>`;
+  $('#sf-s1').hidden = true; $('#sf-s2').hidden = false;
+  $('#sf-l').textContent = 'Send customer profile to Finance';
+  $('#sf-back').textContent = 'Back'; $('#sf-next').textContent = 'Send email to Finance'; $('#sf-err').innerHTML = '';
+  $('.modal.wide').scrollTop = 0;
 }
 function sendFinance(dealId) {
-  const t = document.querySelector('input[name="sf-t"]:checked');
-  if (!t) { $('#sf-err').innerHTML = '<p class="err">Choose the payment terms the customer is asking for.</p>'; return; }
+  const cls = sfCls();
   const x = dealById(dealId), p = window._pending || {}, prev = reviews[dealId];
   Object.assign(x, { name: p.name ?? x.name, amount: p.amount ?? x.amount, cls: p.cls ?? x.cls });
   reviews[dealId] = { status: 'pending', a: prev && prev.a, sentBy: 'NM', sentAt: nowIso(), from: stageName(x),
-    terms: t.value, termsNote: $('#sf-tn').value.trim(), note: $('#sf-n').value.trim() };
-  addHistory(dealId, { t: 'Sent to Finance for payment terms review', tag: 'Finance review', comment: `Requested: ${termsText(reviews[dealId])}${p.comment ? ` · ${p.comment}` : ''}` });
+    terms: cls, note: $('#sf-n').value.trim(), mailedTo: FINANCE_MAIL };
+  addHistory(dealId, { t: 'Customer profile emailed to Finance for review', tag: 'Finance review', comment: `Classification: ${CLS_LABEL[cls]}${p.comment ? ` · ${p.comment}` : ''}` });
   window._pending = null;
-  closeModal(); toast(`Sent to Finance · ${x.name} moves to Qualified once cleared`); render();
+  closeModal(); toast(`Email sent to ${FINANCE_MAIL} · ${x.name} moves to Qualified once Finance clears it`); render();
 }
 
 /* ---- Finance: queue of customer profiles to review ---- */
@@ -1212,7 +1278,7 @@ function reviewView(x) {
     <div class="head" style="margin:0">
       <div><h2>${esc(x.name)}</h2>
         <div class="ids"><span class="idtag">${x.id}</span>${statusPill(r)}<span class="cls ${x.cls}">${x.cls}</span></div>
-        <div class="rv-meta"><span>Sent by <b>${OWNERS[r.sentBy].name}</b> · ${longD(r.sentAt)} · ${time(r.sentAt)}</span><span>Moving from ${esc(r.from)} to Qualified</span>
+        <div class="rv-meta"><span>Sent by <b>${OWNERS[r.sentBy].name}</b> · ${longD(r.sentAt)} · ${time(r.sentAt)}</span><span>Moving from ${esc(r.from)} to Qualified</span>${r.mailedTo ? `<span>Emailed to ${esc(r.mailedTo)}</span>` : ''}
           ${r.reviewedAt ? `<span>${r.status === 'cleared' ? 'Cleared' : 'Sent back'} by <b>${OWNERS[r.reviewedBy].name}</b> · ${longD(r.reviewedAt)}</span>` : ''}</div></div>
       <div class="rv-acts"><a class="btn" href="#${x.id.toLowerCase()}">Open deal ${ICON.go}</a>${r.status === 'pending' ? `<button class="btn" onclick="returnModal('${x.id}')">Send back to sales</button>` : ''}</div>
     </div>
@@ -1260,12 +1326,12 @@ function checklistPanel(x, r) {
     ${checklistSummary(r.a)}</div>`;
   if (r.status === 'returned') return `<div class="panel ck-panel">${head}</div>
     <div class="callout bad" style="margin:18px 0 0">${ICON.warn}<span><b>Sent back to sales:</b> ${esc(r.comment)}<br>The checklist reopens here when sales sends the deal again.</span></div></div>`;
-  const a = { ...(r.a || {}), clr: [] };
+  const a = { ...(r.a || {}), ...(r.terms ? { cls: [r.terms] } : {}), clr: [] };
   return `<div class="panel ck-panel">${head}
       <div class="kprog" aria-hidden="true">${KYC_SECTIONS.map((_, i) => `<span data-p="${i}"></span>`).join('')}</div>
       <div class="kstep-l" id="k-stepl"></div></div>
     <div class="ckb">${KYC_SECTIONS.map((sec, i) => `<div class="kyc-sec" data-step="${i}" hidden><h4>${sec.h}${sec.hint ? ` <small>(${sec.hint.toLowerCase()})</small>` : ''}</h4>
-      ${i === 0 && r.terms ? `<div class="ask">${ICON.quote}<span>Sales requested <b>${TERMS[r.terms].t}</b>${r.termsNote ? ` · ${esc(r.termsNote)}` : ''}</span></div>` : ''}
+      ${i === 0 && r.terms ? `<div class="ask">${ICON.quote}<span>Sales selected <b>${esc(CLS_LABEL[r.terms])}</b>. Confirm it or change it.</span></div>` : ''}
       ${sec.q.map(q => kycField(q, a)).join('')}</div>`).join('')}</div>
     <div class="ckf">
       <button class="btn" id="k-back" onclick="kycGo(-1)">Back</button>
@@ -1289,6 +1355,8 @@ function kycField(q, a) {
 /* Section A: only one classification can be ticked */
 function kycOne(el) {
   if (el.checked) document.querySelectorAll(`input[name="${el.name}"]`).forEach(i => { if (i !== el) i.checked = false; });
+  const f = el.closest('.field'); if (f) f.classList.remove('bad');
+  const e = document.querySelector('#sf-err'); if (e) e.innerHTML = '';
   kycNa();
 }
 /* The credit-only requirement is greyed out unless the customer is a credit customer */
