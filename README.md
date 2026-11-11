@@ -12,10 +12,18 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
 - `Q-26-11-017` (raised from `RFQ-26-11-015`) is linked to the Quote Issued deal `OP-26-11-024`.
 - RFQ and quote pages follow the live OnePort365 RFQ and Quotes screens.
 - A deal can move from Qualified to Quote Issued without a quote; the quote links to the deal automatically when it is issued.
-- Moving a deal into Qualified (from any stage, by drag or Edit) pops up the **Customer Payment Terms – Qualifying
-  Checklist** in 3 steps: A. customer classification (tick one), B. onboarding requirements (tick all; the
-  credit due-diligence item only applies to credit customers), C. clearance. The deal moves only once every
-  applicable box is ticked. The completed checklist shows on the deal page under "Payment terms checklist".
-- Board cards can be dragged between columns (on touch screens: press and hold, then drag). Dropping any deal on Qualified opens the payment
-  terms checklist and the card moves only when it is submitted (Cancel leaves it where it was). Dropping on Quote
+- Moving a deal into Qualified (from any stage, by drag or Edit) **sends it to Finance**. Sales picks the payment terms the
+  customer is asking for and can add a note. The deal stays where it is, with a "Finance review" badge, until Finance clears it.
+- **Finance › Customer profile reviews** (the $ icon in the left rail, `#finance`) lists deals awaiting review, cleared and sent back.
+  Each review page (`#review-op-…`) shows the company profile (name, industry, RC number, TIN, address, customer history),
+  contact details (person, role, email, phone, sales owner) and product details (product, amount, route, commodity, volume,
+  requested terms), next to the **Customer Payment Terms – Qualifying Checklist** in 3 steps: A. customer classification
+  (tick one), B. onboarding requirements (tick all; the credit due-diligence item only applies to credit customers),
+  C. clearance. "Finance and Internal Control involved from the onboarding stage" has been removed.
+- When Finance clicks **Clear and notify sales**, the deal moves to Qualified and the sales owner gets a notification
+  (bell in the top bar) saying the deal is qualified. Finance can instead **Send back to sales** with a comment; sales is
+  notified and can resend. The deal page shows the review status and the completed checklist.
+- Sample reviews: `OP-26-11-022` (Fast track export) and `OP-26-10-014` (Chevron) are awaiting Finance; the Manuchar deals are cleared.
+- Board cards can be dragged between columns (on touch screens: press and hold, then drag). Dropping any deal on Qualified opens
+  "Send to Finance"; the card moves only when Finance clears it (Cancel leaves it where it was). Dropping on Quote
   Issued moves the deal even with no quote yet; dropping on Closed asks Won or Lost.
