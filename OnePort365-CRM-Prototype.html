@@ -1176,7 +1176,7 @@ function statusPill(r) {
 }
 
 /* Sales picks the customer classification (checklist step A), then the customer profile is emailed to Finance */
-const FINANCE_MAIL = 'finance@oneport365.com';
+const FINANCE_MAIL = 'Nkechim@oneport365.com, okpanachia@oneport365.com';
 function sendFinanceModal(dealId, pending) {
   const x = dealById(dealId), r = reviews[dealId] || {};
   window._pending = pending || {};
@@ -1215,7 +1215,7 @@ function sfNext(dealId) {
     <div class="mail">
       <div class="mail-h">
         <div><span>From</span>${esc(OWNERS.NM.name)} (Sales)</div>
-        <div><span>To</span>Finance team &lt;${FINANCE_MAIL}&gt;</div>
+        <div><span>To</span>${FINANCE_MAIL}</div>
         <div><span>Subject</span><b>Customer profile review: ${esc(p.name || x.name)} · ${x.id}</b></div>
       </div>
       <div class="mail-b">
@@ -1250,7 +1250,7 @@ function sendFinance(dealId) {
     terms: cls, note: $('#sf-n').value.trim(), mailedTo: FINANCE_MAIL };
   addHistory(dealId, { t: 'Customer profile emailed to Finance for review', tag: 'Finance review', comment: `Classification: ${CLS_LABEL[cls]}${p.comment ? ` · ${p.comment}` : ''}` });
   window._pending = null;
-  closeModal(); toast(`Email sent to ${FINANCE_MAIL} · you'll be notified when ${x.name} is ready for Qualified`); render();
+  closeModal(); toast(`Email sent to Finance · you'll be notified when ${x.name} is ready for Qualified`); render();
 }
 
 /* ---- Finance: queue of customer profiles to review ---- */

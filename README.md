@@ -13,7 +13,7 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
 - RFQ and quote pages follow the live OnePort365 RFQ and Quotes screens.
 - A deal can move from Qualified to Quote Issued without a quote; the quote links to the deal automatically when it is issued.
 - Moving a deal into Qualified (from any stage, by drag or Edit) opens the checklist at **step A, customer classification**.
-  Once sales ticks one, the next screen shows the email that goes to Finance (finance@oneport365.com) with the customer
+  Once sales ticks one, the next screen shows the email that goes to Finance (Nkechim@oneport365.com, okpanachia@oneport365.com) with the customer
   profile (company, contact, product, amount, route, classification) and an optional note. **Send email to Finance**
   sends it. The deal stays where it is, with a "Finance review" badge, until Finance clears it.
 - **Finance › Customer profile reviews** (the $ icon in the left rail, `#finance`) lists deals awaiting review, cleared and sent back.
