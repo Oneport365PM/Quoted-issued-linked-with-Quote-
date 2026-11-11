@@ -25,7 +25,8 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
 - When Finance clicks **Clear and notify sales**, the deal moves to Qualified and the sales owner gets a notification
   (bell in the top bar) saying the deal is qualified. Finance can instead **Send back to sales** with a comment; sales is
   notified and can resend. The deal page shows the review status and the completed checklist.
-- Sample reviews: `OP-26-11-022` (Fast track export) and `OP-26-10-014` (Chevron) are awaiting Finance; the Manuchar deals are cleared.
+- The checklist pops up on every move into Qualified, even for a deal already with Finance (sending again updates the request).
+- Sample reviews: `OP-26-10-014` (Chevron) is awaiting Finance; the Manuchar deals are cleared.
 - Board cards can be dragged between columns (on touch screens: press and hold, then drag). Dropping any deal on Qualified opens
   "Send to Finance"; the card moves only when Finance clears it (Cancel leaves it where it was). Dropping on Quote
   Issued moves the deal even with no quote yet; dropping on Closed asks Won or Lost.

@@ -594,8 +594,6 @@ const MANUCHAR_KYC = {
 const reviews = {
   'OP-26-11-023': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T11:40', from: 'Contacted', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T16:05' },
   'OP-26-11-024': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T10:20', from: 'Prospect', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T14:55' },
-  'OP-26-11-022': { status: 'pending', sentBy: 'SE', sentAt: '2026-11-10T15:22', from: 'Contacted', terms: 'adv', termsNote: '90% upfront, 10% on arrival at Rotterdam',
-    note: 'Repeat customer. Paid the last two shipments in advance on time. Wants the same terms for a monthly programme.' },
   'OP-26-10-014': { status: 'pending', sentBy: 'OA', sentAt: '2026-11-11T09:05', from: 'Contacted', terms: 'credit', termsNote: '30 days from invoice',
     note: 'Customer procurement policy only allows 30-day credit. Needs Internal Control credit assessment.' },
 };
@@ -607,9 +605,6 @@ const notifs = [
 ];
 
 const history = {
-  'OP-26-11-022': [
-    { t: 'Sent to Finance for payment terms review', by: 'SE', at: '2026-11-10T15:22', tag: 'Finance review', comment: 'Requested: Advance payment · 90% upfront, 10% on arrival at Rotterdam' },
-  ],
   'OP-26-10-014': [
     { t: 'Sent to Finance for payment terms review', by: 'OA', at: '2026-11-11T09:05', tag: 'Finance review', comment: 'Requested: Credit terms · 30 days from invoice' },
   ],
@@ -811,7 +806,6 @@ function listHtml(list) {
 function moveDeal(id, target) {
   const x = dealById(id);
   if (!x || target === x.stage) return;
-  if (isPending(id) && target !== 'closed') return toast(`${x.name} is with Finance for review. It moves to Qualified when Finance clears it.`);
   if (target === 'closed') return closeDealModal(id);
   if (needsKyc(x, target)) return sendFinanceModal(id, { name: x.name, amount: x.amount, cls: x.cls, stage: target });
   applyStage(x, target);
@@ -840,7 +834,6 @@ function closeDealModal(id) {
 function doClose(id) {
   const x = dealById(id), out = document.querySelector('input[name=cl]:checked').value;
   if (out === 'won' && needsKyc(x, 'won')) {
-    if (isPending(id)) { closeModal(); return toast(`${x.name} is still with Finance. It can be marked Won once Finance clears it.`); }
     return sendFinanceModal(id, { name: x.name, amount: x.amount, cls: x.cls, stage: 'won', comment: $('#cl-c').value.trim() || undefined });
   }
   applyStage(x, out, $('#cl-c').value.trim() || undefined);
@@ -1084,7 +1077,7 @@ function editDealModal(dealId) {
     <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" id="e-save" onclick="saveDeal('${x.id}')">Save changes</button></div>`);
   const chk = () => {
     const s = $('#e-s').value, kycNext = needsKyc(x, s);
-    const held = isPending(x.id) && s !== 'lost' && s !== cur;
+    const held = false;
     $('#e-err').innerHTML = held ? `<div class="callout">${ICON.warn}<span>This deal is with Finance for review. It moves to Qualified when Finance clears it.</span></div>`
       : kycNext ? `<div class="callout ok">${ICON.check}<span>Next you'll send this deal to Finance. Finance reviews the customer profile and payment terms checklist, then the deal moves to Qualified and you're notified.</span></div>` : '';
     $('#e-save').textContent = kycNext && !held ? 'Continue' : 'Save changes';
@@ -1167,6 +1160,7 @@ function sendFinanceModal(dealId, pending) {
       <div class="kstep-l" id="sf-l">Step 1 of 3 · Customer classification</div></div>
     <div class="mb">
       <div class="kyc-sec" id="sf-s1"><h4>${KYC_SECTIONS[0].h} <small>(tick one)</small></h4>${kycField(KYC_SECTIONS[0].q[0], a)}
+        ${r.status === 'pending' ? `<div class="callout" style="margin:0 0 12px">${ICON.warn}<span>Already with Finance since ${longD(r.sentAt)}. Sending again updates the request and emails Finance.</span></div>` : ''}
         <p class="sf-hint">Steps 2 and 3 are completed by Finance. Once you tick one, the customer profile is emailed to Finance to review.</p></div>
       <div class="kyc-sec" id="sf-s2" hidden></div>
     </div>
