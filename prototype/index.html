@@ -667,7 +667,6 @@ function moveDeal(id, target) {
   const x = dealById(id);
   if (!x || target === x.stage) return;
   if (target === 'closed') return closeDealModal(id);
-  if (target === 'quote' && !dealQuotes(x).length) return toast('This deal moves to Quote Issued once a quote has been issued for it');
   if (needsKyc(x, target)) return kycModal(id, { name: x.name, amount: x.amount, cls: x.cls, stage: target });
   applyStage(x, target);
   toast(`${x.name} moved to ${stageLabel(target)}`); render();
@@ -899,9 +898,8 @@ function editDealModal(dealId) {
     <div class="field"><label for="e-cm">Comment</label><input id="e-cm" placeholder="Why is this changing?"></div>
     <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" id="e-save" onclick="saveDeal('${x.id}')">Save changes</button></div>`);
   const chk = () => {
-    const s = $('#e-s').value, hasQ = dealQuotes(x).length, kycNext = needsKyc(x, s);
-    $('#e-err').innerHTML = s === 'quote' && !hasQ ? `<p class="err">This deal can move to Quote Issued once a quote has been issued for it. The quote is linked automatically.</p>`
-      : kycNext ? `<div class="callout ok">${ICON.check}<span>Next you'll complete the KYC questionnaire. The deal moves to Qualified when it's submitted.</span></div>` : '';
+    const s = $('#e-s').value, kycNext = needsKyc(x, s);
+    $('#e-err').innerHTML = kycNext ? `<div class="callout ok">${ICON.check}<span>Next you'll complete the KYC questionnaire. The deal moves to Qualified when it's submitted.</span></div>` : '';
     $('#e-save').textContent = kycNext ? 'Continue to KYC' : 'Save changes';
   };
   $('#e-s').addEventListener('change', chk); chk();
@@ -909,7 +907,6 @@ function editDealModal(dealId) {
 function saveDeal(dealId) {
   const x = dealById(dealId);
   const s = $('#e-s').value;
-  if (s === 'quote' && !dealQuotes(x).length) return;
   if (needsKyc(x, s)) {
     const pending = { name: $('#e-n').value.trim() || x.name, amount: Math.max(0, +$('#e-a').value || 0), cls: $('#e-c').value, comment: $('#e-cm').value.trim() || undefined, stage: s };
     return kycModal(x.id, pending);
