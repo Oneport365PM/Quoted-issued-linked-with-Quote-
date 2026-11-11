@@ -404,6 +404,22 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .kyc-sec.locked h4 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kyc-sec h4 .lock { margin-left: auto; width: auto; height: auto; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 2px 8px; }
 .callout.ready { align-items: center; flex-wrap: wrap; }
+.ftrack-p { margin-bottom: 20px; }
+.ftrack { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.ftrack li { display: flex; gap: 10px; align-items: flex-start; position: relative; min-width: 0; }
+.ftrack li:not(:last-child)::after { content: ""; position: absolute; left: 32px; right: -8px; top: 11px; border-top: 2px solid var(--line); }
+.ftrack li.done:not(:last-child)::after { border-top-color: var(--green); }
+.ftrack li > div { background: var(--surface); position: relative; z-index: 1; padding-right: 8px; min-width: 0; }
+.ftrack .dt { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); display: grid; place-items: center; flex: none; position: relative; z-index: 1; font-size: 12px; font-weight: 700; }
+.ftrack li.done .dt { background: var(--green); border-color: var(--green); color: #fff; }
+.ftrack li.now .dt { border-color: var(--amber); background: var(--amber-soft); box-shadow: 0 0 0 4px var(--amber-soft); }
+.ftrack li.bad .dt { background: var(--red); border-color: var(--red); color: #fff; }
+.ftrack b { display: block; font-size: 13.5px; font-weight: 600; }
+.ftrack li.todo b { color: var(--muted); }
+.ftrack small { display: block; font-size: 12px; color: var(--ink-2); margin-top: 3px; line-height: 1.5; overflow-wrap: anywhere; }
+.ftrack small b { display: inline; font-size: 12px; color: var(--red); font-weight: 500; }
+.ftrack-f { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-2); }
+@media (max-width: 720px) { .ftrack { grid-template-columns: minmax(0, 1fr); } .ftrack li:not(:last-child)::after { left: 10px; right: auto; top: 26px; bottom: -14px; border-top: 0; border-left: 2px solid var(--line); } .ftrack li.done:not(:last-child)::after { border-left-color: var(--green); } }
 .callout.ready span { flex: 1; min-width: 200px; }
 .ck-panel .ckb { min-height: 240px; }
 .ask { display: flex; gap: 8px; align-items: center; background: var(--blue-soft); color: var(--blue); border-radius: 8px; padding: 9px 12px; font-size: 12.5px; margin: 0 0 12px; }
@@ -593,8 +609,8 @@ const MANUCHAR_KYC = {
 /* Finance review per deal. Sales sends the deal to Finance when it moves into Qualified;
    Finance checks the customer profile, completes the payment terms checklist, and the deal moves to Qualified. */
 const reviews = {
-  'OP-26-11-023': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T11:40', from: 'Contacted', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T16:05', used: true },
-  'OP-26-11-024': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T10:20', from: 'Prospect', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T14:55', used: true },
+  'OP-26-11-023': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T11:40', from: 'Contacted', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T16:05', openedBy: 'FA', openedAt: '2026-11-04T13:10', used: true },
+  'OP-26-11-024': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T10:20', from: 'Prospect', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T14:55', openedBy: 'FA', openedAt: '2026-11-04T12:30', used: true },
   'OP-26-10-014': { status: 'pending', sentBy: 'OA', sentAt: '2026-11-11T09:05', from: 'Contacted', terms: 'credit', termsNote: '30 days from invoice',
     note: 'Customer procurement policy only allows 30-day credit. Needs Internal Control credit assessment.' },
 };
@@ -695,7 +711,7 @@ function render() {
   const fin = h === 'finance' || h.startsWith('review-');
   paintChrome(fin);
   if (h === 'finance') { v.innerHTML = financeView(); bindFinance(); }
-  else if (h.startsWith('review-') && reviews[id.slice(7)] && dealById(id.slice(7))) { v.innerHTML = reviewView(dealById(id.slice(7))); bindReview(); }
+  else if (h.startsWith('review-') && reviews[id.slice(7)] && dealById(id.slice(7))) { markOpened(id.slice(7)); v.innerHTML = reviewView(dealById(id.slice(7))); bindReview(); }
   else if (h.startsWith('op-') && dealById(id)) v.innerHTML = dealView(dealById(id));
   else if (h.startsWith('rfq-') && rfqs[id]) v.innerHTML = rfqView(rfqs[id]);
   else if (h.startsWith('q-') && quotes[id]) v.innerHTML = quoteView(quotes[id]);
@@ -914,6 +930,7 @@ function dealView(x) {
       <button class="btn" onclick="editDealModal('${x.id}')">Edit ${ICON.pen}</button>
     </div>
   </div>
+  ${financeTracker(x)}
   <div class="grid2">
     <div class="stack">
       <div class="panel">
@@ -1141,7 +1158,7 @@ const CLS_LABEL = { new: 'New customer · Cash Before Service', adv: 'Existing A
 function reviewPill(id) {
   const r = reviews[id];
   if (!r) return '';
-  if (r.status === 'pending') return '<span class="pill review">Finance review</span>';
+  if (r.status === 'pending') return `<span class="pill review">${r.openedAt ? 'Under Finance review' : 'Sent to Finance'}</span>`;
   if (r.status === 'returned') return '<span class="pill back">Sent back by Finance</span>';
   if (readyForQ(id)) return `<span class="pill pass">${ICON.check} Ready for Qualified</span>`;
   return '';
@@ -1422,6 +1439,13 @@ function submitKyc(dealId) {
     p: `Finance completed the payment terms checklist (${CLS_LABEL[a.cls[0]]}). ${inQ ? `${x.id} stays in Qualified.` : `You can now move ${x.id} to Qualified.`}` });
   toast(`Cleared · ${OWNERS[x.owner].name} notified that ${x.id} is ready for Qualified`); render();
 }
+/* Finance opening a pending profile marks it as under review */
+function markOpened(id) {
+  const r = reviews[id];
+  if (!r || r.status !== 'pending' || r.openedAt) return;
+  Object.assign(r, { openedAt: nowIso(), openedBy: 'FA' });
+  addHistory(id, { t: 'Finance opened the customer profile for review', by: 'FA', tag: 'Under review' });
+}
 const readyForQ = id => { const r = reviews[id]; return !!r && r.status === 'cleared' && !r.used; };
 /* Finance sends a deal back when something is missing */
 function returnModal(dealId) {
@@ -1442,22 +1466,51 @@ function doReturn(dealId) {
 }
 
 /* ---- deal page: where the Finance review stands ---- */
+/* ---- deal page: Finance review tracker (sent → under review → reviewed) ---- */
+const when = (at, by) => `${by ? `${OWNERS[by].name} · ` : ''}${longD(at)} · ${time(at)}`;
+function financeTracker(x) {
+  let r = reviews[x.id];
+  if (r && r.status === 'withdrawn') r = null;
+  if (!r && (x.outcome || x.stage === 'quote')) return '';
+  const review = `#review-${x.id.toLowerCase()}`;
+  let pill, steps, foot = '';
+  if (!r) {
+    pill = '<span class="pill stage">Not sent to Finance</span>';
+    steps = [['todo', 'Sent to Finance', 'Not sent yet'], ['todo', 'Under review by Finance', 'Waiting'], ['todo', 'Reviewed by Finance', 'Waiting']];
+    foot = `<span>The customer profile is emailed to Finance when you move this deal to Qualified.</span><button class="btn sm primary" onclick="sendFinanceModal('${x.id}')">Send to Finance</button>`;
+  } else {
+    const sent = ['done', 'Sent to Finance', `${when(r.sentAt, r.sentBy)}${r.mailedTo ? `<br>Emailed to ${esc(r.mailedTo)}` : ''}`];
+    const opened = r.openedAt ? ['done', 'Under review by Finance', `Opened by ${when(r.openedAt, r.openedBy)}`] : null;
+    if (r.status === 'pending') {
+      pill = r.openedAt ? '<span class="pill review">Under Finance review</span>' : '<span class="pill review">Sent to Finance</span>';
+      steps = [sent, opened ? ['now', opened[1], opened[2]] : ['now', 'Under review by Finance', 'Waiting for Finance to open the profile'], ['todo', 'Reviewed by Finance', 'Waiting']];
+      foot = `<span>You'll be notified when Finance has reviewed the profile.</span><a class="btn sm" href="${review}">View customer profile ${ICON.go}</a>`;
+    } else if (r.status === 'returned') {
+      pill = '<span class="pill back">Sent back by Finance</span>';
+      steps = [sent, opened || ['done', 'Under review by Finance', ''], ['bad', 'Reviewed: sent back', `${when(r.reviewedAt, r.reviewedBy)}<br><b>${esc(r.comment)}</b>`]];
+      foot = `<span>Fix what Finance asked for, then send the profile again.</span><button class="btn sm primary" onclick="sendFinanceModal('${x.id}')">Resend to Finance</button>`;
+    } else {
+      pill = `<span class="pill pass">${ICON.check} Reviewed by Finance</span>`;
+      steps = [sent, opened || ['done', 'Under review by Finance', ''], ['done', 'Reviewed: cleared', `${when(r.reviewedAt, r.reviewedBy)}<br>${esc(CLS_LABEL[r.a.cls[0]])}`]];
+      foot = readyForQ(x.id)
+        ? `<span><b>Ready to move to Qualified.</b></span><button class="btn sm dark" onclick="moveDeal('${x.id}', 'qualified')">Move to Qualified</button>`
+        : `<span>Payment terms checklist cleared.</span><a class="btn sm" href="${review}">View review ${ICON.go}</a>`;
+    }
+  }
+  return `<div class="panel ftrack-p">
+    <div class="lk-head" style="margin-bottom:18px"><p class="sec-t" style="margin:0">Finance review</p>${pill}</div>
+    <ol class="ftrack">${steps.map(([st, t, d]) => `<li class="${st}"><span class="dt">${st === 'done' ? ICON.check : st === 'bad' ? '!' : ''}</span><div><b>${t}</b><small>${d}</small></div></li>`).join('')}</ol>
+    <div class="ftrack-f">${foot}</div></div>`;
+}
 function dealReviewCallout(x) {
   const r = reviews[x.id];
   if (!r || x.outcome) return '';
-  if (r.status === 'pending') return `<div class="callout">${ICON.warn}<span>With Finance for payment terms review since ${longD(r.sentAt)}. You'll be notified when it's ready to move to Qualified. <a href="#review-${x.id.toLowerCase()}">Open customer profile review</a></span></div>`;
-  if (r.status === 'returned') return `<div class="callout bad">${ICON.warn}<span><b>Finance sent this deal back:</b> ${esc(r.comment)}</span></div>`;
-  if (readyForQ(x.id)) return `<div class="callout ok ready">${ICON.check}<span><b>Finance cleared this customer.</b> The deal is ready to move to Qualified.</span><button class="btn sm dark" onclick="moveDeal('${x.id}', 'qualified')">Move to Qualified</button></div>`;
   return '';
 }
 function kycPanel(x) {
   const r = reviews[x.id];
   const title = '<p class="sec-t" style="margin:0">Payment terms checklist</p>';
-  if (!r || r.status === 'withdrawn') {
-    if (!['qualified', 'quote'].includes(x.stage) || x.outcome) return '';
-    return `<div class="panel"><p class="sec-t">Payment terms checklist</p>
-      <div class="empty-box">Finance has not reviewed this customer yet.<br><button class="btn sm primary" onclick="sendFinanceModal('${x.id}')">Send to Finance</button></div></div>`;
-  }
+  if (!r || r.status !== 'cleared') return '';
   if (r.status === 'pending') return `<div class="panel">
     <div class="lk-head" style="margin-bottom:16px">${title}<span class="pill review">With Finance</span></div>
     <div class="kv"><div><div class="k">Sent by</div><div class="v">${OWNERS[r.sentBy].name}</div></div><div><div class="k">Sent</div><div class="v tnum">${longD(r.sentAt)} · ${time(r.sentAt)}</div></div>

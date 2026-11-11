@@ -25,9 +25,12 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
 - On the review page, step A (the classification sales picked) is **read only**. Finance completes only their part:
   step B onboarding requirements and step C clearance.
 - When Finance clicks **Clear and notify sales**, the sales owner gets a notification (bell in the top bar) that the deal
-  is **ready to move to Qualified**. The deal page shows a **Move to Qualified** button and the card a "Ready for Qualified"
+  is **ready to move to Qualified**. The deal page's Finance review tracker shows a **Move to Qualified** button and the card a "Ready for Qualified"
   badge; sales moves the deal without the checklist popping up again. A later move back into Qualified needs a new review.
   Finance can instead **Send back to sales** with a comment; sales is notified and can resend.
+- The deal page has a **Finance review** tracker under the deal header: Sent to Finance (who, when, emailed address) →
+  Under review by Finance (when Finance opens the profile) → Reviewed by Finance (cleared, or sent back with the reason).
+  The header badge reads Sent to Finance, Under Finance review, Ready for Qualified or Sent back by Finance.
 - The checklist pops up on every move into Qualified, even for a deal already with Finance (sending again updates the request).
 - Sample reviews: `OP-26-10-014` (Chevron) is awaiting Finance; the Manuchar deals are cleared.
 - Board cards can be dragged between columns (on touch screens: press and hold, then drag). Dropping any deal on Qualified opens
