@@ -1353,8 +1353,8 @@ function checklistPanel(x, r) {
       <div class="kprog" aria-hidden="true">${FIN_STEPS.map((_, i) => `<span data-p="${i}"></span>`).join('')}</div>
       <div class="kstep-l" id="k-stepl"></div></div>
     <div class="kyc-sec locked"><h4>${A.h} <small>· completed by sales</small><span class="lock">${ICON.lock} Read only</span></h4>
-      <div class="ticks">${A.q[0].opts.map((o, i) => `<label class="tick ${has(a, 'cls', o.v) ? '' : 'off'}">
-        <input type="checkbox" id="k-cls-${i}" name="k-cls" value="${o.v}" ${has(a, 'cls', o.v) ? 'checked' : ''} disabled><span>${optText(o)}</span></label>`).join('')}</div>
+      <div class="ticks">${A.q[0].opts.map((o, i) => has(a, 'cls', o.v) ? `<label class="tick">
+        <input type="checkbox" id="k-cls-${i}" name="k-cls" value="${o.v}" checked disabled><span>${optText(o)}</span></label>` : '').join('')}</div>
       <p class="sf-hint">Selected by ${OWNERS[r.sentBy].name}. To change it, send the deal back to sales.</p></div>
     <div class="ckb">${FIN_STEPS.map((si, i) => { const sec = KYC_SECTIONS[si]; return `<div class="kyc-sec" data-step="${i}" hidden><h4>${sec.h}${sec.hint ? ` <small>(${sec.hint.toLowerCase()})</small>` : ''}</h4>
       ${sec.q.map(q => kycField(q, a)).join('')}</div>`; }).join('')}</div>
@@ -1366,7 +1366,7 @@ function checklistPanel(x, r) {
 }
 function checklistSummary(a) {
   return `<div class="kv" style="margin-top:14px"><div class="full"><div class="k">Customer classification</div><div class="v">${esc(CLS_LABEL[a.cls[0]])}</div></div></div>
-    ${KYC_SECTIONS.map(sec => `<div class="kyc-grp"><b>${sec.h}</b><ul>${sec.q.flatMap(q => q.opts.map(o => {
+    ${KYC_SECTIONS.map(sec => `<div class="kyc-grp"><b>${sec.h}</b><ul>${sec.q.flatMap(q => q.opts.filter(o => q.id !== 'cls' || has(a, 'cls', o.v)).map(o => {
       const na = o.creditOnly && !isCredit(a), on = has(a, q.id, o.v);
       return `<li class="${on ? 'on' : ''}"><span class="bx">${on ? ICON.check : ''}</span><span>${optText(o)}${na ? ' · not applicable' : ''}</span></li>`;
     })).join('')}</ul></div>`).join('')}`;
