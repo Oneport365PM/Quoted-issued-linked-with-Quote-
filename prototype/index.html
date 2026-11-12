@@ -1207,14 +1207,7 @@ function sfNext(dealId) {
   const row = (k, v) => `<tr><th>${k}</th><td>${v || '<span style="color:var(--muted)">Not on file</span>'}</td></tr>`;
   $('#sf-s2').innerHTML = `<h4>Email to Finance</h4>
     <div class="mail">
-      <div class="mail-h">
-        <div><span>From</span>${esc(OWNERS.NM.name)} (Sales)</div>
-        <div><span>To</span>${FINANCE_MAIL}</div>
-        <div><span>Subject</span><b>Customer profile review: ${esc(p.name || x.name)} · ${x.id}</b></div>
-      </div>
       <div class="mail-b">
-        <p>Hi Finance,</p>
-        <p>${esc(p.name || x.name)} is moving from ${esc(stageName(x))} to Qualified. Please review the customer profile and complete steps B and C of the payment terms qualifying checklist.</p>
         <table class="mail-t"><tbody>
           ${row('Company', esc(p.name || x.name))}
           ${row('Industry', esc(c.industry))}
