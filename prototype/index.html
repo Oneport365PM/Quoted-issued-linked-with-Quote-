@@ -1285,7 +1285,6 @@ function reviewView(x) {
   const r = reviews[x.id], c = companyOf(x), ct = contactOf(x), o = OWNERS[x.owner];
   const past = deals.filter(d => d.name === x.name && d.id !== x.id), won = past.filter(d => d.outcome === 'won');
   const hist = past.length ? `${past.length} other deal${past.length === 1 ? '' : 's'} · ${won.length} won${won.length ? ` (${money(won.reduce((a, d) => a + d.amount, 0))})` : ''}` : 'No previous deals with OnePort365';
-  const linked = [...dealRfqs(x), ...dealQuotes(x)];
   return `
   <button class="back" onclick="go('finance')">${ICON.back} Back to customer reviews</button>
   <div class="panel" style="margin-bottom:20px">
@@ -1321,13 +1320,8 @@ function reviewView(x) {
         </div></div>
       <div class="panel">${secH(IC.pr, 'Product details')}
         <div class="kv">
-          ${kvi('Product', esc(x.product))}
+          ${kvi('Product type', esc(x.product))}
           ${kvi('Deal amount', `<span style="color:var(--gold);font-weight:600" class="tnum">${money(x.amount)}</span>`)}
-          ${kvi('Route', esc(x.route), 1)}
-          ${kvi('Commodity', esc(x.commodity))}
-          ${kvi('Expected volume', esc(x.volume))}
-          ${kvi('Requested payment terms', r.terms ? `<b style="font-weight:600">${TERMS[r.terms].t}</b>${r.termsNote ? ` · ${esc(r.termsNote)}` : ''}<div style="font-size:12.5px;color:var(--ink-2);margin-top:2px">${TERMS[r.terms].d}</div>` : '', 1)}
-          ${linked.length ? kvi('Linked RFQ / quote', linked.map(idLink).join(', '), 1) : ''}
         </div></div>
     </div>
     ${checklistPanel(x, r)}

@@ -18,8 +18,7 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   sends it. The deal stays where it is, with a "Finance review" badge, until Finance clears it.
 - **Finance › Customer profile reviews** (the $ icon in the left rail, `#finance`) lists deals awaiting review, cleared and sent back.
   Each review page (`#review-op-…`) shows the company profile (name, industry, RC number, TIN, address, customer history),
-  contact details (person, role, email, phone, sales owner) and product details (product, amount, route, commodity, volume,
-  requested terms), next to the **Customer Payment Terms – Qualifying Checklist** in 3 steps: A. customer classification
+  contact details (person, role, email, phone, sales owner) and product details (product type, deal amount), next to the **Customer Payment Terms – Qualifying Checklist** in 3 steps: A. customer classification
   (tick one), B. onboarding requirements (tick all; the credit due-diligence item only applies to credit customers),
   C. clearance. "Finance and Internal Control involved from the onboarding stage" has been removed.
 - On the review page, step A (the classification sales picked) is **read only**. Finance completes only their part:
