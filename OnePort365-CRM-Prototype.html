@@ -1223,7 +1223,6 @@ function sfNext(dealId) {
           ${row('Phone', esc(ct.phone))}
           ${row('Product', esc(x.product))}
           ${row('Deal amount', money(p.amount ?? x.amount))}
-          ${row('Route', esc(x.route))}
           ${row('Classification', `<b>${esc(CLS_LABEL[cls])}</b> (selected by sales)`)}
         </tbody></table>
         <span class="mail-btn">Open customer profile review</span>
