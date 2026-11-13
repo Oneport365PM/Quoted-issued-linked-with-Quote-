@@ -410,6 +410,8 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .kyc-sec.locked h4 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kyc-sec h4 .lock { margin-left: auto; width: auto; height: auto; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 2px 8px; }
 .callout.ready { align-items: center; flex-wrap: wrap; }
+.fin-cmt { background: var(--blue-soft); color: var(--ink); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.5; margin-top: 14px; overflow-wrap: anywhere; }
+.fin-cmt b { display: block; font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
 .ck-detail { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
 .ck-detail .kyc-all { margin-top: 12px; }
 .lock-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
@@ -617,7 +619,7 @@ const MANUCHAR_KYC = {
 /* Finance review per deal. Sales sends the deal to Finance when it moves into Qualified;
    Finance checks the customer profile, completes the payment terms checklist, and the deal moves to Qualified. */
 const reviews = {
-  'OP-26-11-023': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T11:40', from: 'Contacted', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T16:05', openedBy: 'FA', openedAt: '2026-11-04T13:10', used: true },
+  'OP-26-11-023': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T11:40', from: 'Contacted', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T16:05', finComment: 'Advance terms confirmed. Collect the 90% before the NAFDAC permit is filed.', openedBy: 'FA', openedAt: '2026-11-04T13:10', used: true },
   'OP-26-11-024': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T10:20', from: 'Prospect', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T14:55', openedBy: 'FA', openedAt: '2026-11-04T12:30', used: true },
   'OP-26-10-014': { status: 'pending', sentBy: 'OA', sentAt: '2026-11-11T09:05', from: 'Contacted', terms: 'credit', termsNote: '30 days from invoice',
     note: 'Customer procurement policy only allows 30-day credit. Needs Internal Control credit assessment.' },
@@ -1292,7 +1294,7 @@ function reviewView(x, ro) {
         <div class="ids"><span class="idtag">${x.id}</span>${statusPill(r)}<span class="cls ${x.cls}">${x.cls}</span></div>
         <div class="rv-meta"><span>Sent by <b>${OWNERS[r.sentBy].name}</b> · ${longD(r.sentAt)} · ${time(r.sentAt)}</span><span>Moving from ${esc(r.from)} to Qualified</span>${r.mailedTo ? `<span>Emailed to ${esc(r.mailedTo)}</span>` : ''}
           ${r.reviewedAt ? `<span>${r.status === 'cleared' ? 'Cleared' : 'Sent back'} by <b>${OWNERS[r.reviewedBy].name}</b> · ${longD(r.reviewedAt)}</span>` : ''}</div></div>
-      <div class="rv-acts"><a class="btn" href="#${x.id.toLowerCase()}">Open deal ${ICON.go}</a>${r.status === 'pending' && !ro ? `<button class="btn" onclick="returnModal('${x.id}')">Send back to sales</button>` : ''}</div>
+      <div class="rv-acts">${r.status === 'pending' && !ro ? `<button class="btn" onclick="returnModal('${x.id}')">Send back to sales</button>` : ''}</div>
     </div>
     ${r.note ? `<div class="note" style="min-height:0;margin-top:18px"><b style="color:var(--ink);font-weight:600">Note from sales:</b> ${esc(r.note)}</div>` : ''}
   </div>
@@ -1330,6 +1332,7 @@ function checklistPanel(x, r, ro) {
   const head = `<div class="ckh"><h3>Customer Payment Terms · Qualifying Checklist</h3><p class="lead"><i>Complete before any payment terms are agreed or communicated to the customer.</i></p>`;
   if (r.status === 'cleared') return `<div class="panel ck-panel">${head}</div>
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0 4px"><span class="pill pass">${ICON.check} Cleared · sales notified${r.used ? '' : ': ready for Qualified'}</span><span style="font-size:12px;color:var(--muted)">${OWNERS[r.reviewedBy].name} · ${longD(r.reviewedAt)} · ${time(r.reviewedAt)}</span></div>
+    ${r.finComment ? `<div class="fin-cmt"><b>Finance comment</b>${esc(r.finComment)}</div>` : ''}
     ${checklistSummary(r.a, true)}</div>`;
   if (r.status === 'returned') return `<div class="panel ck-panel">${head}</div>
     <div class="callout bad" style="margin:18px 0 0">${ICON.warn}<span><b>Sent back to sales:</b> ${esc(r.comment)}<br>${ro ? 'Fix what Finance asked for, then resend from the deal page.' : 'The checklist reopens here when sales sends the deal again.'}</span></div></div>`;
@@ -1349,7 +1352,8 @@ function checklistPanel(x, r, ro) {
         <input type="checkbox" id="k-cls-${i}" name="k-cls" value="${o.v}" checked disabled><span>${optText(o)}</span></label>` : '').join('')}</div>
       <p class="sf-hint">Selected by ${OWNERS[r.sentBy].name}. To change it, send the deal back to sales.</p></div>
     <div class="ckb">${FIN_STEPS.map((si, i) => { const sec = KYC_SECTIONS[si]; return `<div class="kyc-sec" data-step="${i}" hidden><h4>${sec.h}${sec.hint ? ` <small>(${sec.hint.toLowerCase()})</small>` : ''}</h4>
-      ${sec.q.map(q => kycField(q, a)).join('')}</div>`; }).join('')}</div>
+      ${sec.q.map(q => kycField(q, a)).join('')}
+      ${i === FIN_STEPS.length - 1 ? `<div class="field" style="margin-top:16px"><label for="k-cmt">Comment for sales (optional)</label><textarea id="k-cmt" placeholder="e.g. Approved for 30-day credit up to $10,000. Review again after 3 shipments.">${esc(r.finComment || '')}</textarea></div>` : ''}</div>`; }).join('')}</div>
     <div class="ckf">
       <button class="btn" id="k-back" onclick="kycGo(-1)">Back</button>
       <button class="btn dark" id="k-next" onclick="kycGo(1, '${x.id}')">Next</button>
@@ -1425,10 +1429,11 @@ function readKyc() {
 function submitKyc(dealId) {
   const a = readKyc(), x = dealById(dealId), r = reviews[dealId];
   const inQ = x.stage === 'qualified' && !x.outcome;
-  Object.assign(r, { status: 'cleared', a, reviewedBy: 'FA', reviewedAt: nowIso(), used: inQ });
-  addHistory(dealId, { t: 'Finance cleared the payment terms checklist', by: 'FA', tag: 'Cleared', tagCls: 'won', comment: `${CLS_LABEL[a.cls[0]]}. ${inQ ? 'Deal is already in Qualified.' : 'Sales notified: ready to move to Qualified.'}` });
+  const cmt = ($('#k-cmt') || {}).value ? $('#k-cmt').value.trim() : '';
+  Object.assign(r, { status: 'cleared', a, reviewedBy: 'FA', reviewedAt: nowIso(), used: inQ, finComment: cmt });
+  addHistory(dealId, { t: 'Finance cleared the payment terms checklist', by: 'FA', tag: 'Cleared', tagCls: 'won', comment: cmt || `${CLS_LABEL[a.cls[0]]}. ${inQ ? 'Deal is already in Qualified.' : 'Sales notified: ready to move to Qualified.'}` });
   notify({ to: x.owner, dealId, kind: 'ok', t: inQ ? `${x.name} cleared by Finance` : `${x.name} is ready to move to Qualified`,
-    p: `Finance completed the payment terms checklist (${CLS_LABEL[a.cls[0]]}). ${inQ ? `${x.id} stays in Qualified.` : `You can now move ${x.id} to Qualified.`}` });
+    p: `Finance completed the payment terms checklist (${CLS_LABEL[a.cls[0]]}). ${inQ ? `${x.id} stays in Qualified.` : `You can now move ${x.id} to Qualified.`}${cmt ? ` Finance comment: ${cmt}` : ''}` });
   toast(`Cleared · ${OWNERS[x.owner].name} notified that ${x.id} is ready for Qualified`); render();
 }
 /* Finance opening a pending profile marks it as under review */
@@ -1504,6 +1509,7 @@ function dealReviewCallout(x) {
 function checklistDetail(r) {
   return `<div class="ck-detail">
     <div class="kv"><div class="full"><div class="k">Customer classification</div><div class="v">${esc(CLS_LABEL[r.a.cls[0]])}</div></div></div>
+    ${r.finComment ? `<div class="fin-cmt"><b>Finance comment</b>${esc(r.finComment)}</div>` : ''}
     <details class="kyc-all"><summary>View checklist</summary>${checklistSummary(r.a)}</details></div>`;
 }
 

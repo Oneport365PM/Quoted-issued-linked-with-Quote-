@@ -23,6 +23,8 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   C. clearance. "Finance and Internal Control involved from the onboarding stage" has been removed.
 - On the review page, step A (the classification sales picked) is **read only**. Finance completes only their part:
   step B onboarding requirements and step C clearance.
+- On step C Finance can add an optional **Comment for sales**. It is included in the notification and the deal history,
+  and shows as "Finance comment" on the deal page's payment terms checklist and on the cleared review.
 - When Finance clicks **Clear and notify sales**, the sales owner gets a notification (bell in the top bar) that the deal
   is **ready to move to Qualified**. The tracker shows a **Move to Qualified** button and the card a "Ready for Qualified"
   badge; sales moves the deal without the checklist popping up again. A later move back into Qualified needs a new review.
