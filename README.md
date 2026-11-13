@@ -30,6 +30,9 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
 - The deal page has a **Finance review** tracker under the deal header: Sent to Finance (who, when, emailed address) →
   Under review by Finance (when Finance opens the profile) → Reviewed by Finance (cleared, or sent back with the reason).
   The header badge reads Sent to Finance, Under Finance review, Ready for Qualified or Sent back by Finance.
+- Sales cannot edit the checklist. Links from the deal page (View customer profile, View review) open a read-only copy of
+  the review (`#profile-op-…`) with no tick boxes, no Send back button, and without marking the profile as opened by Finance.
+  Only the Finance page (`#review-op-…`, from the $ icon) lets Finance tick steps B and C.
 - The checklist pops up on every move into Qualified, even for a deal already with Finance (sending again updates the request).
 - Sample reviews: `OP-26-10-014` (Chevron) is awaiting Finance; the Manuchar deals are cleared.
 - Board cards can be dragged between columns (on touch screens: press and hold, then drag). Dropping any deal on Qualified opens
