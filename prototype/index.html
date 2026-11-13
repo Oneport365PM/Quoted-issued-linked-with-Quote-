@@ -303,70 +303,6 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .terms-t { font-weight: 700; font-size: 15px; margin: 30px 0 14px; padding-top: 24px; border-top: 1px solid var(--line); }
 .terms { border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px 18px 42px; margin: 0; font-size: 14px; line-height: 1.7; }
 
-/* Payment terms qualifying checklist */
-.modal.wide { width: min(780px, 100%); padding: 0; }
-.modal.wide .mh { padding: 22px 24px 14px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 1; }
-.modal.wide .mh .lead { margin: 0; }
-.modal.wide .mb { padding: 8px 24px 4px; }
-.modal.wide .mf { padding: 14px 24px; border-top: 1px solid var(--line); position: sticky; bottom: 0; background: var(--surface); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.kyc-sec { padding: 18px 0 6px; }
-.kyc-sec:last-child { border-bottom: 0; }
-.kyc-sec h4 { margin: 0 0 14px; font-size: 15px; font-weight: 600; color: var(--ink); }
-.kyc-sec h4 small { font-size: 13px; font-weight: 400; color: var(--ink-2); }
-.ticks { display: flex; flex-direction: column; gap: 8px; }
-.tick { display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; cursor: pointer; font-size: 14px; font-weight: 400 !important; color: var(--ink) !important; line-height: 1.5; }
-.tick:has(input:checked) { border-color: var(--green); background: #f3faec; }
-.field .tick input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: var(--green); padding: 0; }
-.tick.off { opacity: .55; cursor: not-allowed; background: var(--surface-2); }
-.tick .na { display: none; font-style: normal; font-size: 12px; color: var(--muted); margin-top: 2px; }
-.tick.off .na { display: block; }
-.field.bad .tick:not(.off):not(:has(input:checked)) { border-color: var(--red); }
-.kyc-sec h4 span { width: 22px; height: 22px; border-radius: 50%; background: var(--lime); color: var(--rail); display: grid; place-items: center; font-size: 11px; }
-.kgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
-.kgrid .full { grid-column: 1 / -1; }
-.field label .req { color: var(--red); }
-.choices { display: flex; flex-wrap: wrap; gap: 8px; }
-.choices label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; font-size: 13px; font-weight: 400; color: var(--ink); cursor: pointer; }
-.choices label:has(input:checked) { border-color: var(--green); background: #f3faec; }
-.field .choices input { accent-color: var(--green); margin: 0; width: 16px; height: 16px; padding: 0; flex: none; }
-.choices label { white-space: nowrap; }
-.choices.col label { white-space: normal; }
-.field.bad input, .field.bad select, .field.bad .choices label { border-color: var(--red); }
-.field.bad > label { color: var(--red); }
-.confirm { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink-2); flex: 1 1 100%; }
-.mf #k-back { margin-left: auto; }
-.confirm input { accent-color: var(--green); margin-top: 3px; }
-.confirm.bad { color: var(--red); }
-.linkbtn { background: none; border: 0; color: var(--green); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; padding: 0; font-size: 13px; }
-.kyc-meta { font-size: 12px; color: var(--muted); margin: -12px 0 16px; }
-.flags { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 6px; }
-.flags li { display: flex; gap: 8px; align-items: center; background: var(--amber-soft); color: #6b4a00; border-radius: 6px; padding: 7px 10px; font-size: 12.5px; }
-.kyc-all { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
-.kyc-all summary { cursor: pointer; color: var(--green); font-weight: 500; font-size: 13px; }
-.kyc-all dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 20px; margin: 14px 0 0; font-size: 13px; }
-.kyc-all dt { color: var(--ink-2); }
-.kyc-all dd { margin: 0; overflow-wrap: anywhere; }
-.kprog { display: flex; gap: 6px; margin-top: 14px; }
-.kprog span { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
-.kprog span.done { background: var(--green); }
-.kprog span.on { background: var(--lime); }
-.kstep-l { font-size: 12px; color: var(--ink-2); margin-top: 8px; font-weight: 500; }
-.kyc-sec .confirm { margin: 6px 0 16px; padding-top: 14px; border-top: 1px solid var(--line); }
-.modal.wide .mb { min-height: 260px; }
-.choices.col { flex-direction: column; align-items: flex-start; }
-.kyc-grp { margin-top: 14px; }
-.kyc-grp b { font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: var(--ink-2); }
-.kyc-grp ul { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
-.kyc-grp li { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); }
-.kyc-grp li .bx { margin-top: 2px; }
-.kyc-grp b { text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--ink); }
-.kyc-grp li b { font-size: 13px; color: inherit; }
-.kyc-grp li.on { color: var(--ink); }
-.kyc-grp .bx { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #c9cdc5; display: grid; place-items: center; flex: none; }
-.kyc-grp li.on .bx { background: var(--green); border-color: var(--green); color: #fff; }
-.pill.pass { background: var(--green-soft); color: var(--green); font-weight: 600; }
-@media (max-width: 560px) { .kgrid, .kyc-all dl { grid-template-columns: minmax(0, 1fr); } }
-
 @media (max-width: 1100px) {
   .qwrap { grid-template-columns: minmax(0, 1fr); }
   .f4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -494,27 +430,14 @@ const QUOTE_LIST = [
   { id: 'Q-26-11-013', status: 'Awaiting Customer Decision', co: 'Greenpeg', svc: 'Air Freight', route: 'PNQ → LOS', date: '2026-11-04' },
 ];
 
-const MANUCHAR_KYC = {
-  cls: ['adv'],
-  onb: ['fin', 'framework', 'wc', 'deviation', 'documented'],
-  clr: ['clear'],
-};
-/* Payment terms qualifying checklist per deal; completed when a deal moves to Qualified */
-const kyc = {
-  'OP-26-11-023': { a: MANUCHAR_KYC, by: 'KA', at: '2026-11-04T16:05' },
-  'OP-26-11-024': { a: MANUCHAR_KYC, by: 'KA', at: '2026-11-04T14:55' },
-};
-
 const history = {
   'OP-26-11-023': [
     { t: 'Moved deal from Contacted to Qualified', by: 'KA', at: '2026-11-04T16:10', tag: 'Qualified', comment: 'Customer has approved for payment.' },
-    { t: 'Payment terms checklist completed', by: 'KA', at: '2026-11-04T16:05', tag: 'Cleared', comment: 'Existing Advance Payment customer: minimum 90% upfront.' },
     { t: 'Moved deal from Prospect to Contacted', by: 'KA', at: '2026-11-03T12:30', tag: 'Contacted' },
   ],
   'OP-26-11-024': [
     { t: 'Moved deal from Qualified to Quote Issued', by: 'KA', at: '2026-11-06T10:12', tag: 'Quote Issued', comment: 'Quote sent to Ekene. Valid for 7 days.' },
     { t: 'Moved deal from Prospect to Qualified', by: 'KA', at: '2026-11-04T15:00', tag: 'Qualified' },
-    { t: 'Payment terms checklist completed', by: 'KA', at: '2026-11-04T14:55', tag: 'Cleared', comment: 'Existing Advance Payment customer: minimum 90% upfront.' },
   ],
   'OP-26-10-013': [
     { t: 'Deal marked Won', by: 'NM', at: '2026-10-09T09:44', tag: 'Won', tagCls: 'won', comment: 'Won' },
@@ -672,12 +595,11 @@ function listHtml(list) {
       <td><div style="display:flex;gap:6px">${linkChips(x) || '<span style="color:var(--muted)">None</span>'}</div></td>
       <td class="tnum">${dmy(x.created)}</td></tr>`).join('')}</tbody></table></div>`;
 }
-/* Drag a card to another column. Entering Qualified for the first time runs the payment terms checklist first. */
+/* Drag a card to another column */
 function moveDeal(id, target) {
   const x = dealById(id);
   if (!x || target === x.stage) return;
   if (target === 'closed') return closeDealModal(id);
-  if (needsKyc(x, target)) return kycModal(id, { name: x.name, amount: x.amount, cls: x.cls, stage: target });
   applyStage(x, target);
   toast(`${x.name} moved to ${stageLabel(target)}`); render();
 }
@@ -702,7 +624,6 @@ function closeDealModal(id) {
 }
 function doClose(id) {
   const x = dealById(id), out = document.querySelector('input[name=cl]:checked').value;
-  if (out === 'won' && needsKyc(x, 'won')) return kycModal(id, { name: x.name, amount: x.amount, cls: x.cls, stage: 'won', comment: $('#cl-c').value.trim() || undefined });
   applyStage(x, out, $('#cl-c').value.trim() || undefined);
   closeModal(); toast(`${x.name} marked ${out === 'won' ? 'Won' : 'Lost'}`); render();
 }
@@ -793,7 +714,6 @@ function dealView(x) {
           <div class="full"><div class="k">Note</div><div class="note">${esc(x.note || 'No notes on this deal yet.')}</div></div>
         </div>
       </div>
-      ${kycPanel(x)}
     </div>
     <div class="panel">
       <div class="lk-head" style="margin-bottom:20px"><p class="sec-t">Deal history</p><button class="btn primary" onclick="activityModal('${x.id}')">+ Add Activity</button></div>
@@ -938,23 +858,12 @@ function editDealModal(dealId) {
     <div class="frow"><div class="field"><label for="e-a">Amount (USD)</label><input id="e-a" type="number" min="0" value="${x.amount}"></div>
     <div class="field"><label for="e-c">Class</label><select id="e-c">${['SME', 'Growth', 'Enterprise'].map(c => `<option ${c === x.cls ? 'selected' : ''}>${c}</option>`).join('')}</select></div></div>
     <div class="field"><label for="e-s">Stage</label><select id="e-s">${opts.map(([k, l]) => `<option value="${k}" ${k === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
-    <div id="e-err"></div>
     <div class="field"><label for="e-cm">Comment</label><input id="e-cm" placeholder="Why is this changing?"></div>
     <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" id="e-save" onclick="saveDeal('${x.id}')">Save changes</button></div>`);
-  const chk = () => {
-    const s = $('#e-s').value, kycNext = needsKyc(x, s);
-    $('#e-err').innerHTML = kycNext ? `<div class="callout ok">${ICON.check}<span>Next you'll complete the payment terms qualifying checklist. The deal moves to Qualified when it's submitted.</span></div>` : '';
-    $('#e-save').textContent = kycNext ? 'Continue to checklist' : 'Save changes';
-  };
-  $('#e-s').addEventListener('change', chk); chk();
 }
 function saveDeal(dealId) {
   const x = dealById(dealId);
   const s = $('#e-s').value;
-  if (needsKyc(x, s)) {
-    const pending = { name: $('#e-n').value.trim() || x.name, amount: Math.max(0, +$('#e-a').value || 0), cls: $('#e-c').value, comment: $('#e-cm').value.trim() || undefined, stage: s };
-    return kycModal(x.id, pending);
-  }
   const before = x.outcome ? (x.outcome === 'won' ? 'Won' : 'Lost') : stageLabel(x.stage);
   x.name = $('#e-n').value.trim() || x.name; x.amount = Math.max(0, +$('#e-a').value || 0); x.cls = $('#e-c').value;
   const cm = $('#e-cm').value.trim() || undefined;
@@ -965,149 +874,6 @@ function saveDeal(dealId) {
   }
   closeModal(); toast('Deal updated'); render();
 }
-/* ---------- Customer Payment Terms: Qualifying Checklist ---------- */
-const KYC_SECTIONS = [
-  { t: 'Customer classification', h: 'A. Customer classification', hint: 'Tick one', q: [
-    { id: 'cls', one: 1, opts: [
-      { v: 'new', b: 'New customer:', t: 'Cash Before Service (full payment before service)' },
-      { v: 'adv', b: 'Existing Advance Payment customer:', t: 'minimum 90% paid upfront before service' },
-      { v: 'credit', b: 'Credit customer:', t: 'credit assessment completed <b>and</b> formal approval obtained from Internal Control or written approval from the CEO' },
-    ] },
-  ] },
-  { t: 'Onboarding requirements', h: 'B. Onboarding requirements', hint: 'Tick all', q: [
-    { id: 'onb', all: 1, opts: [
-      { v: 'fin', t: 'Finance and Internal Control involved from the onboarding stage' },
-      { v: 'framework', t: 'Proposed payment terms align with the approved payment framework' },
-      { v: 'wc', t: 'Finance has reviewed working capital and cash-flow impact' },
-      { v: 'dd', t: 'Internal Control has completed customer due diligence and credit assessment (credit customers only)', creditOnly: 1 },
-      { v: 'deviation', t: 'Any deviation from standard terms identified and escalated for CEO approval' },
-      { v: 'documented', t: 'Payment terms documented, approved and shared with all relevant stakeholders' },
-    ] },
-  ] },
-  { t: 'Clearance', h: 'C. Clearance', q: [
-    { id: 'clr', all: 1, opts: [{ v: 'clear', t: 'All applicable boxes above are ticked. Service may proceed.' }] },
-  ] },
-];
-const KYC_Q = KYC_SECTIONS.flatMap(s => s.q);
-const optText = o => o.b ? `<b>${esc(o.b)}</b> ${o.t}` : esc(o.t).replace('(credit customers only)', '<i>(credit customers only)</i>');
-const LATER = ['qualified', 'quote', 'won'];
-/* The checklist pops up every time a deal is moved into Qualified, and when a deal skips past Qualified without one */
-function needsKyc(x, target) {
-  if (target === 'qualified') return x.stage !== 'qualified' || !!x.outcome;
-  return LATER.includes(target) && !kyc[x.id] && ['prospect', 'contacted'].includes(x.stage) && !x.outcome;
-}
-const has = (a, id, v) => (a[id] || []).includes(v);
-const isCredit = a => has(a, 'cls', 'credit');
-const CLS_LABEL = { new: 'New customer · Cash Before Service', adv: 'Existing Advance Payment customer · min. 90% upfront', credit: 'Credit customer · approved credit terms' };
-const kycResult = () => 'Cleared';
-function kycField(q, a) {
-  return `<div class="field full" data-q="${q.id}"><div class="ticks" role="group">${q.opts.map((o, i) => `<label class="tick" data-v="${o.v}">
-      <input type="checkbox" id="k-${q.id}-${i}" name="k-${q.id}" value="${o.v}" ${has(a, q.id, o.v) ? 'checked' : ''} ${q.one ? `onchange="kycOne(this)"` : ''}${q.id === 'onb' ? ` onchange="kycNa()"` : ''}>
-      <span>${optText(o)}${o.creditOnly ? '<em class="na">Not applicable: customer is not a credit customer</em>' : ''}</span></label>`).join('')}</div></div>`;
-}
-/* Section A: only one classification can be ticked */
-function kycOne(el) {
-  if (el.checked) document.querySelectorAll(`input[name="${el.name}"]`).forEach(i => { if (i !== el) i.checked = false; });
-  kycNa();
-}
-/* The credit-only requirement is greyed out unless the customer is a credit customer */
-function kycNa() {
-  const credit = !!document.querySelector('input[name="k-cls"][value="credit"]:checked');
-  const row = document.querySelector('.tick[data-v="dd"]');
-  if (!row) return;
-  row.classList.toggle('off', !credit);
-  const box = row.querySelector('input'); box.disabled = !credit; if (!credit) box.checked = false;
-}
-function kycModal(dealId, pending, prefill, startStep = 0) {
-  const x = dealById(dealId);
-  const prev = prefill || (kyc[dealId] && kyc[dealId].a) || {};
-  /* when moving, earlier answers are kept but clearance must be ticked again */
-  const a = pending ? { ...prev, clr: [] } : prev;
-  window._kycPending = pending || null;
-  const moving = !!pending, n = KYC_SECTIONS.length;
-  modal(`<div class="mh"><h3>Customer Payment Terms · Qualifying Checklist</h3>
-      <p class="lead">${esc(x.name)} · ${x.id}<br><i>Complete before any payment terms are agreed or communicated to the customer.</i></p>
-      <div class="kprog" aria-hidden="true">${KYC_SECTIONS.map((_, i) => `<span data-p="${i}"></span>`).join('')}</div>
-      <div class="kstep-l" id="k-stepl"></div></div>
-    <div class="mb">${KYC_SECTIONS.map((sec, i) => `<div class="kyc-sec" data-step="${i}" hidden><h4>${sec.h}${sec.hint ? ` <small>(${sec.hint.toLowerCase()})</small>` : ''}</h4>${sec.q.map(q => kycField(q, a)).join('')}</div>`).join('')}</div>
-    <div class="mf">
-      <button class="btn" id="k-back" onclick="kycGo(-1)">Back</button>
-      <button class="btn dark" id="k-next" onclick="kycGo(1, '${dealId}')">Next</button>
-      <div id="k-err" style="flex-basis:100%"></div>
-    </div>`, 'wide');
-  window._kycMoving = moving;
-  kycNa();
-  kycShow(startStep);
-}
-let kycStep = 0;
-const kycTarget = () => { const t = (window._kycPending || {}).stage || 'qualified'; return t === 'won' ? 'Closed · Won' : stageLabel(t); };
-function kycShow(i) {
-  const n = KYC_SECTIONS.length;
-  kycStep = i;
-  document.querySelectorAll('[data-step]').forEach(el => el.hidden = +el.dataset.step !== i);
-  document.querySelectorAll('[data-p]').forEach(el => el.className = +el.dataset.p < i ? 'done' : +el.dataset.p === i ? 'on' : '');
-  $('#k-stepl').textContent = `Step ${i + 1} of ${n} · ${KYC_SECTIONS[i].t}`;
-  $('#k-back').textContent = i === 0 ? 'Cancel' : 'Back';
-  $('#k-next').textContent = i < n - 1 ? 'Next' : (window._kycMoving ? `Clear and move to ${kycTarget()}` : 'Save checklist');
-  $('#k-err').innerHTML = '';
-  $('.modal.wide').scrollTop = 0;
-  const first = $(`[data-step="${i}"] input`); if (first) first.focus();
-}
-/* Next checks only the current step; the last step submits */
-function kycGo(dir, dealId) {
-  if (dir < 0) { if (kycStep === 0) closeModal(); else kycShow(kycStep - 1); return; }
-  const sec = KYC_SECTIONS[kycStep];
-  const a = readKyc();
-  document.querySelectorAll('.field.bad').forEach(f => f.classList.remove('bad'));
-  let msg = '';
-  sec.q.forEach(q => {
-    const need = q.opts.filter(o => !(o.creditOnly && !isCredit(a))).map(o => o.v);
-    const got = a[q.id];
-    if (q.one && got.length !== 1) msg = 'Tick one customer classification to continue.';
-    if (q.all && need.some(v => !got.includes(v))) msg = q.id === 'clr' ? 'Tick the clearance box to confirm service may proceed.' : `Tick all ${need.length} applicable requirements to continue. ${need.length - need.filter(v => got.includes(v)).length} still unticked.`;
-    if (msg) $(`[data-q="${q.id}"]`).classList.add('bad');
-  });
-  if (msg) { $('#k-err').innerHTML = `<p class="err" style="margin:0">${msg}</p>`; return; }
-  if (kycStep < KYC_SECTIONS.length - 1) kycShow(kycStep + 1); else submitKyc(dealId);
-}
-function readKyc() {
-  const a = {};
-  KYC_Q.forEach(q => { a[q.id] = [...document.querySelectorAll(`input[name="k-${q.id}"]:checked`)].map(i => i.value); });
-  return a;
-}
-function submitKyc(dealId) {
-  const a = readKyc();
-  const x = dealById(dealId);
-  kyc[dealId] = { a, by: 'NM', at: nowIso() };
-  addHistory(dealId, { t: 'Payment terms checklist completed', tag: 'Cleared', comment: CLS_LABEL[a.cls[0]] + '.' });
-  const p = window._kycPending;
-  const tgt = p ? (p.stage || 'qualified') : null;
-  if (p) { Object.assign(x, { name: p.name, amount: p.amount, cls: p.cls }); applyStage(x, tgt, p.comment); }
-  window._kycPending = null;
-  closeModal(); toast(p ? `Checklist cleared · deal moved to ${tgt === 'won' ? 'Closed · Won' : stageLabel(tgt)}` : 'Checklist saved'); render();
-}
-function kycPanel(x) {
-  const k = kyc[x.id];
-  if (!k) {
-    if (!['qualified', 'quote'].includes(x.stage) || x.outcome) return '';
-    return `<div class="panel"><p class="sec-t">Payment terms checklist</p>
-      <div class="empty-box">The qualifying checklist has not been completed for this deal.<br><button class="btn sm primary" onclick="kycModal('${x.id}')">Complete checklist</button></div></div>`;
-  }
-  const a = k.a;
-  return `<div class="panel">
-    <div class="lk-head" style="margin-bottom:20px"><p class="sec-t" style="margin:0">Payment terms checklist</p>
-      <div style="display:flex;gap:8px;align-items:center"><span class="pill pass">${ICON.check} Cleared</span><button class="btn sm" onclick="kycModal('${x.id}')">Update</button></div></div>
-    <div class="kyc-meta">Completed by ${OWNERS[k.by].name} · ${longD(k.at)} · ${time(k.at)}</div>
-    <div class="kv"><div class="full"><div class="k">Customer classification</div><div class="v">${esc(CLS_LABEL[a.cls[0]])}</div></div></div>
-    <details class="kyc-all"><summary>View checklist</summary>
-      ${KYC_SECTIONS.map(sec => `<div class="kyc-grp"><b>${sec.h}</b><ul>${sec.q.flatMap(q => q.opts.map(o => {
-        const na = o.creditOnly && !isCredit(a), on = has(a, q.id, o.v);
-        return `<li class="${on ? 'on' : ''}"><span class="bx">${on ? ICON.check : ''}</span><span>${optText(o)}${na ? ' · not applicable' : ''}</span></li>`;
-      })).join('')}</ul></div>`).join('')}
-    </details>
-  </div>`;
-}
-
 let seq = 23;
 function newDealModal() {
   modal(`<h3>New deal</h3><p class="lead">Starts in Prospect. ID: OP-26-11-0${seq}</p>
