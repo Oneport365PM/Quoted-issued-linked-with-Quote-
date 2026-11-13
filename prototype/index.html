@@ -407,11 +407,11 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .ck-detail { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
 .ck-detail .kyc-all { margin-top: 12px; }
 .lock-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
-.ftrack-p { margin-bottom: 20px; }
-.ftrack { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.ftrack-p { margin-bottom: 0; }
+.ftrack { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .ftrack li { display: flex; gap: 10px; align-items: flex-start; position: relative; min-width: 0; }
-.ftrack li:not(:last-child)::after { content: ""; position: absolute; left: 32px; right: -8px; top: 11px; border-top: 2px solid var(--line); }
-.ftrack li.done:not(:last-child)::after { border-top-color: var(--green); }
+.ftrack li:not(:last-child)::after { content: ""; position: absolute; left: 10px; top: 26px; bottom: -14px; border-left: 2px solid var(--line); }
+.ftrack li.done:not(:last-child)::after { border-left-color: var(--green); }
 .ftrack li > div { background: var(--surface); position: relative; z-index: 1; padding-right: 8px; min-width: 0; }
 .ftrack .dt { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); display: grid; place-items: center; flex: none; position: relative; z-index: 1; font-size: 12px; font-weight: 700; }
 .ftrack li.done .dt { background: var(--green); border-color: var(--green); color: #fff; }
@@ -422,7 +422,6 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .ftrack small { display: block; font-size: 12px; color: var(--ink-2); margin-top: 3px; line-height: 1.5; overflow-wrap: anywhere; }
 .ftrack small b { display: inline; font-size: 12px; color: var(--red); font-weight: 500; }
 .ftrack-f { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-2); }
-@media (max-width: 720px) { .ftrack { grid-template-columns: minmax(0, 1fr); } .ftrack li:not(:last-child)::after { left: 10px; right: auto; top: 26px; bottom: -14px; border-top: 0; border-left: 2px solid var(--line); } .ftrack li.done:not(:last-child)::after { border-left-color: var(--green); } }
 .callout.ready span { flex: 1; min-width: 200px; }
 .ck-panel .ckb { min-height: 240px; }
 .ask { display: flex; gap: 8px; align-items: center; background: var(--blue-soft); color: var(--blue); border-radius: 8px; padding: 9px 12px; font-size: 12.5px; margin: 0 0 12px; }
@@ -934,7 +933,6 @@ function dealView(x) {
       <button class="btn" onclick="editDealModal('${x.id}')">Edit ${ICON.pen}</button>
     </div>
   </div>
-  ${financeTracker(x)}
   <div class="grid2">
     <div class="stack">
       <div class="panel">
@@ -951,6 +949,7 @@ function dealView(x) {
           <div class="full"><div class="k">Note</div><div class="note">${esc(x.note || 'No notes on this deal yet.')}</div></div>
         </div>
       </div>
+      ${financeTracker(x)}
     </div>
     <div class="panel">
       <div class="lk-head" style="margin-bottom:20px"><p class="sec-t">Deal history</p><button class="btn primary" onclick="activityModal('${x.id}')">+ Add Activity</button></div>

@@ -27,7 +27,7 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   is **ready to move to Qualified**. The tracker shows a **Move to Qualified** button and the card a "Ready for Qualified"
   badge; sales moves the deal without the checklist popping up again. A later move back into Qualified needs a new review.
   Finance can instead **Send back to sales** with a comment; sales is notified and can resend.
-- The deal page's **Payment terms checklist** panel sits right under the deal header and opens with the Finance review tracker: Sent to Finance (who, when, emailed address) →
+- The deal page's **Payment terms checklist** panel sits under Deal information and opens with the Finance review tracker: Sent to Finance (who, when, emailed address) →
   Under review by Finance (when Finance opens the profile) → Reviewed by Finance (cleared, or sent back with the reason).
   The header badge reads Sent to Finance, Under Finance review, Ready for Qualified or Sent back by Finance.
 - Sales cannot edit the checklist. Links from the deal page (View customer profile, View review) open a read-only copy of
