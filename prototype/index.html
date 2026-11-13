@@ -404,6 +404,8 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .kyc-sec.locked h4 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kyc-sec h4 .lock { margin-left: auto; width: auto; height: auto; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 2px 8px; }
 .callout.ready { align-items: center; flex-wrap: wrap; }
+.ck-detail { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.ck-detail .kyc-all { margin-top: 12px; }
 .lock-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
 .ftrack-p { margin-bottom: 20px; }
 .ftrack { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
@@ -949,7 +951,6 @@ function dealView(x) {
           <div class="full"><div class="k">Note</div><div class="note">${esc(x.note || 'No notes on this deal yet.')}</div></div>
         </div>
       </div>
-      ${kycPanel(x)}
     </div>
     <div class="panel">
       <div class="lk-head" style="margin-bottom:20px"><p class="sec-t">Deal history</p><button class="btn primary" onclick="activityModal('${x.id}')">+ Add Activity</button></div>
@@ -1484,37 +1485,21 @@ function financeTracker(x) {
     }
   }
   return `<div class="panel ftrack-p">
-    <div class="lk-head" style="margin-bottom:18px"><p class="sec-t" style="margin:0">Finance review</p>${pill}</div>
+    <div class="lk-head" style="margin-bottom:18px"><p class="sec-t" style="margin:0">Payment terms checklist</p><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="lock-tag">${ICON.lock} Read only</span>${pill}</div></div>
     <ol class="ftrack">${steps.map(([st, t, d]) => `<li class="${st}"><span class="dt">${st === 'done' ? ICON.check : st === 'bad' ? '!' : ''}</span><div><b>${t}</b><small>${d}</small></div></li>`).join('')}</ol>
-    <div class="ftrack-f">${foot}</div></div>`;
+    <div class="ftrack-f">${foot}</div>
+    ${r && r.status === 'cleared' ? checklistDetail(r) : ''}</div>`;
 }
 function dealReviewCallout(x) {
   const r = reviews[x.id];
   if (!r || x.outcome) return '';
   return '';
 }
-function kycPanel(x) {
-  const r = reviews[x.id];
-  const title = '<p class="sec-t" style="margin:0">Payment terms checklist</p>';
-  if (!r || r.status !== 'cleared') return '';
-  if (r.status === 'pending') return `<div class="panel">
-    <div class="lk-head" style="margin-bottom:16px">${title}<span class="pill review">With Finance</span></div>
-    <div class="kv"><div><div class="k">Sent by</div><div class="v">${OWNERS[r.sentBy].name}</div></div><div><div class="k">Sent</div><div class="v tnum">${longD(r.sentAt)} · ${time(r.sentAt)}</div></div>
-      <div class="full"><div class="k">Requested payment terms</div><div class="v">${esc(termsText(r))}</div></div></div>
-    <div style="margin-top:18px"><a class="btn sm" href="#profile-${x.id.toLowerCase()}">View customer profile ${ICON.go}</a></div></div>`;
-  if (r.status === 'returned') return `<div class="panel">
-    <div class="lk-head" style="margin-bottom:16px">${title}<span class="pill back">Sent back</span></div>
-    <div class="kyc-meta" style="margin:0 0 12px">${OWNERS[r.reviewedBy].name} · ${longD(r.reviewedAt)} · ${time(r.reviewedAt)}</div>
-    <div class="note" style="min-height:0">${esc(r.comment)}</div>
-    <div style="margin-top:16px"><button class="btn sm primary" onclick="sendFinanceModal('${x.id}')">Resend to Finance</button></div></div>`;
-  return `<div class="panel">
-    <div class="lk-head" style="margin-bottom:20px">${title}
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="lock-tag">${ICON.lock} Read only</span><span class="pill pass">${ICON.check} Cleared by Finance</span><a class="btn sm" href="#profile-${x.id.toLowerCase()}">View review</a></div></div>
-    <div class="kyc-meta">Cleared by ${OWNERS[r.reviewedBy].name} · ${longD(r.reviewedAt)} · ${time(r.reviewedAt)}</div>
-    <div class="kv"><div class="full"><div class="k">Customer classification</div><div class="v">${esc(CLS_LABEL[r.a.cls[0]])}</div></div>
-      <div class="full"><div class="k">Requested payment terms</div><div class="v">${esc(termsText(r))}</div></div></div>
-    <details class="kyc-all"><summary>View checklist</summary>${checklistSummary(r.a)}</details>
-  </div>`;
+/* Completed checklist shown under the Finance review tracker on the deal page (read only) */
+function checklistDetail(r) {
+  return `<div class="ck-detail">
+    <div class="kv"><div class="full"><div class="k">Customer classification</div><div class="v">${esc(CLS_LABEL[r.a.cls[0]])}</div></div></div>
+    <details class="kyc-all"><summary>View checklist</summary>${checklistSummary(r.a)}</details></div>`;
 }
 
 let seq = 23;
