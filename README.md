@@ -16,7 +16,7 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   Once sales ticks one, the next screen shows the email that goes to Finance (Nkechim@oneport365.com, okpanachia@oneport365.com) with the customer
   profile (company, contact, product, amount, classification) and an optional note. **Send email to Finance**
   sends it. The deal stays where it is, with a "Finance review" badge, until Finance clears it.
-- **Finance › Customer profile reviews** (the $ icon in the left rail, `#finance`) lists deals awaiting review, cleared and sent back.
+- **Finance › Customer profile reviews** (the $ icon in the left rail, `#finance`) lists deals awaiting review, cleared and sent back in tabs.
   Each review page (`#review-op-…`) shows the company profile (name, industry, RC number, TIN, address, customer history),
   contact details (person, role, email, phone, sales owner) and product details (product type, deal amount), next to the **Customer Payment Terms – Qualifying Checklist** in 3 steps: A. customer classification
   (tick one), B. onboarding requirements (tick all; the credit due-diligence item only applies to credit customers),
