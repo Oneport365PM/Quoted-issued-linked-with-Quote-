@@ -1248,7 +1248,7 @@ ui.ftab = 'pending';
 function financeView() {
   const rows = Object.entries(reviews).map(([id, r]) => ({ x: dealById(id), r })).filter(o => o.x && o.r.status !== 'withdrawn');
   const by = st => rows.filter(o => o.r.status === st);
-  const tabs = [['pending', 'Awaiting review'], ['cleared', 'Cleared'], ['returned', 'Sent back']];
+  const tabs = [['pending', 'Awaiting review'], ['cleared', 'Cleared']];
   const list = by(ui.ftab).sort((a, b) => (b.r.reviewedAt || b.r.sentAt).localeCompare(a.r.reviewedAt || a.r.sentAt));
   return `
   <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button class="tab ${ui.ftab === k ? 'on' : ''}" data-ft="${k}" role="tab" aria-selected="${ui.ftab === k}">${l}<span class="cnt">${by(k).length}</span></button>`).join('')}</div>
@@ -1288,7 +1288,7 @@ function reviewView(x, ro) {
         <div class="ids"><span class="idtag">${x.id}</span>${statusPill(r)}<span class="cls ${x.cls}">${x.cls}</span></div>
         <div class="rv-meta"><span>Sent by <b>${OWNERS[r.sentBy].name}</b> · ${longD(r.sentAt)} · ${time(r.sentAt)}</span><span>Moving from ${esc(r.from)} to Qualified</span>${r.mailedTo ? `<span>Emailed to ${esc(r.mailedTo)}</span>` : ''}
           ${r.reviewedAt ? `<span>${r.status === 'cleared' ? 'Cleared' : 'Sent back'} by <b>${OWNERS[r.reviewedBy].name}</b> · ${longD(r.reviewedAt)}</span>` : ''}</div></div>
-      <div class="rv-acts">${r.status === 'pending' && !ro ? `<button class="btn" onclick="returnModal('${x.id}')">Send back to sales</button>` : ''}</div>
+      <div class="rv-acts"></div>
     </div>
     ${r.note ? `<div class="note" style="min-height:0;margin-top:18px"><b style="color:var(--ink);font-weight:600">Note from sales:</b> ${esc(r.note)}</div>` : ''}
   </div>
@@ -1344,7 +1344,7 @@ function checklistPanel(x, r, ro) {
     <div class="kyc-sec locked"><h4>${A.h} <small>· completed by sales</small><span class="lock">${ICON.lock} Read only</span></h4>
       <div class="ticks">${A.q[0].opts.map((o, i) => has(a, 'cls', o.v) ? `<label class="tick">
         <input type="checkbox" id="k-cls-${i}" name="k-cls" value="${o.v}" checked disabled><span>${optText(o)}</span></label>` : '').join('')}</div>
-      <p class="sf-hint">Selected by ${OWNERS[r.sentBy].name}. To change it, send the deal back to sales.</p></div>
+      <p class="sf-hint">Selected by ${OWNERS[r.sentBy].name}.</p></div>
     <div class="ckb">${FIN_STEPS.map((si, i) => { const sec = KYC_SECTIONS[si]; return `<div class="kyc-sec" data-step="${i}" hidden><h4>${sec.h}${sec.hint ? ` <small>(${sec.hint.toLowerCase()})</small>` : ''}</h4>
       ${sec.q.map(q => kycField(q, a)).join('')}
       ${i === FIN_STEPS.length - 1 ? `<div class="field" style="margin-top:16px"><label for="k-cmt">Comment for sales (optional)</label><textarea id="k-cmt" placeholder="e.g. Approved for 30-day credit up to $10,000. Review again after 3 shipments.">${esc(r.finComment || '')}</textarea></div>` : ''}</div>`; }).join('')}</div>
@@ -1438,23 +1438,6 @@ function markOpened(id) {
   addHistory(id, { t: 'Finance opened the customer profile for review', by: 'FA', tag: 'Under review' });
 }
 const readyForQ = id => { const r = reviews[id]; return !!r && r.status === 'cleared' && !r.used; };
-/* Finance sends a deal back when something is missing */
-function returnModal(dealId) {
-  const x = dealById(dealId);
-  modal(`<h3>Send back to sales</h3><p class="lead">${esc(x.name)} · ${x.id} · ${esc(OWNERS[x.owner].name)} is notified and the deal stays where it is.</p>
-    <div class="field"><label for="rt-c">What does sales need to provide?</label><textarea id="rt-c" placeholder="e.g. Signed credit application and last 6 months of bank statements"></textarea></div>
-    <div id="rt-err"></div>
-    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" onclick="doReturn('${dealId}')">Send back</button></div>`);
-}
-function doReturn(dealId) {
-  const c = $('#rt-c').value.trim();
-  if (!c) { $('#rt-err').innerHTML = '<p class="err">Tell sales what is missing so they can fix it.</p>'; return; }
-  const x = dealById(dealId), r = reviews[dealId];
-  Object.assign(r, { status: 'returned', comment: c, reviewedBy: 'FA', reviewedAt: nowIso() });
-  addHistory(dealId, { t: 'Finance sent the deal back for more information', by: 'FA', tag: 'Sent back', comment: c });
-  notify({ to: x.owner, dealId, kind: 'warn', t: `${x.name} needs more information`, p: `Finance sent ${x.id} back: ${c}` });
-  closeModal(); toast(`Sent back · ${OWNERS[x.owner].name} notified`); render();
-}
 
 /* ---- deal page: where the Finance review stands ---- */
 /* ---- deal page: Finance review tracker (sent → under review → reviewed) ---- */

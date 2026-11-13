@@ -16,7 +16,7 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   Once sales ticks one, the next screen shows the email that goes to Finance (Nkechim@oneport365.com, okpanachia@oneport365.com) with the customer
   profile (company, contact, product, amount, classification) and an optional note. **Send email to Finance**
   sends it. The deal stays where it is, with a "Finance review" badge, until Finance clears it.
-- **Finance › Customer profile reviews** (the $ icon in the left rail, `#finance`) lists deals awaiting review, cleared and sent back in tabs.
+- **Finance › Customer profile reviews** (the $ icon in the left rail, `#finance`) lists deals awaiting review and cleared, in tabs.
   Each review page (`#review-op-…`) shows the company profile (name, industry, RC number, TIN, address, customer history),
   contact details (person, role, email, phone, sales owner) and product details (product type, deal amount), next to the **Customer Payment Terms – Qualifying Checklist** in 3 steps: A. customer classification
   (tick one), B. onboarding requirements (tick all; the credit due-diligence item only applies to credit customers),
@@ -28,12 +28,11 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
 - When Finance clicks **Clear and notify sales**, the sales owner gets a notification (bell in the top bar) that the deal
   is **ready to move to Qualified**. The tracker shows a **Move to Qualified** button and the card a "Ready for Qualified"
   badge; sales moves the deal without the checklist popping up again. A later move back into Qualified needs a new review.
-  Finance can instead **Send back to sales** with a comment; sales is notified and can resend.
 - The deal page's **Payment terms checklist** panel sits under Deal information and opens with the Finance review tracker: Sent to Finance (who, when, emailed address) →
   Under review by Finance (when Finance opens the profile) → Reviewed by Finance (cleared, or sent back with the reason).
   The header badge reads Sent to Finance, Under Finance review, Ready for Qualified or Sent back by Finance.
 - Sales cannot edit the checklist. Links from the deal page (View customer profile, View review) open a read-only copy of
-  the review (`#profile-op-…`) with no tick boxes, no Send back button, and without marking the profile as opened by Finance.
+  the review (`#profile-op-…`) with no tick boxes and without marking the profile as opened by Finance.
   Only the Finance page (`#review-op-…`, from the $ icon) lets Finance tick steps B and C.
 - The checklist pops up on every move into Qualified, even for a deal already with Finance (sending again updates the request).
 - Sample reviews: `OP-26-10-014` (Chevron) is awaiting Finance; the Manuchar deals are cleared.
