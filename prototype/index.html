@@ -1422,11 +1422,11 @@ function financeView() {
   const list = by(ui.ftab).sort((a, b) => (b.r.reviewedAt || b.r.sentAt).localeCompare(a.r.reviewedAt || a.r.sentAt));
   const tabBar = `<div class="tabs" role="tablist">${tabs.map(([k, l, n]) => `<button class="tab ${ui.ftab === k ? 'on' : ''}" data-ft="${k}" role="tab" aria-selected="${ui.ftab === k}">${l}<span class="cnt">${n}</span></button>`).join('')}</div>`;
   if (ui.ftab === 'docs') return tabBar + (custs.length ? `<div class="table-wrap"><table>
-    <thead><tr><th>Customer</th><th>Classification</th><th>Documents</th><th>Deals</th><th>Last uploaded</th><th></th></tr></thead>
+    <thead><tr><th>Customer</th><th>Classification</th><th>Documents</th><th>Job</th><th>Last uploaded</th><th></th></tr></thead>
     <tbody>${custs.map(c => `<tr data-go="docs-${c.slug}" tabindex="0">
       <td><b>${esc(c.name)}</b></td><td>${esc(CLS_LABEL[c.cls])}</td>
       <td><span class="pill pass">${DOC_ICON} ${c.docs.length} uploaded</span></td>
-      <td>${c.deals.join(', ')}</td>
+      <td><div class="ids">${c.deals.map(id => `<a class="idtag" href="#review-${id.toLowerCase()}" title="Open review for ${id}">${id}</a>`).join('')}</div></td>
       <td class="tnum">${dmy(c.last)} · ${time(c.last)}</td><td style="color:var(--green);font-weight:500">Open ${ICON.go}</td></tr>`).join('')}</tbody></table></div>`
     : '<div class="empty-box">No customer documents yet. They appear here when sales uploads them with a customer profile.</div>');
   return `
