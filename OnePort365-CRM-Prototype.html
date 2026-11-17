@@ -410,6 +410,21 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .kyc-sec.locked h4 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kyc-sec h4 .lock { margin-left: auto; width: auto; height: auto; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 2px 8px; }
 .callout.ready { align-items: center; flex-wrap: wrap; }
+.sf-docs { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.docs-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.docs-h b { font-size: 14px; font-weight: 600; }
+.docs-h span { font-size: 12px; color: var(--ink-2); }
+.docs { display: flex; flex-direction: column; gap: 8px; }
+.doc { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; flex-wrap: wrap; }
+.doc .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex: none; background: var(--surface-2); color: var(--ink-2); }
+.doc.ok { border-color: #b9dcb5; background: #f6fbf1; }
+.doc.ok .ic { background: var(--green); color: #fff; }
+.doc.miss .ic { background: var(--amber-soft); color: var(--amber); }
+.doc.bad { border-color: var(--red); }
+.doc .tx { flex: 1; min-width: 160px; }
+.doc .tx b { display: block; font-size: 13.5px; font-weight: 600; }
+.doc .tx small { display: block; font-size: 12px; color: var(--ink-2); margin-top: 2px; overflow-wrap: anywhere; }
+.doc label.btn { cursor: pointer; }
 .fin-cmt { background: var(--blue-soft); color: var(--ink); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.5; margin-top: 14px; overflow-wrap: anywhere; }
 .fin-cmt b { display: block; font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
 .ck-detail { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
@@ -1181,9 +1196,62 @@ function statusPill(r) {
 
 /* Sales picks the customer classification (checklist step A), then the customer profile is emailed to Finance */
 const FINANCE_MAIL = 'Nkechim@oneport365.com, okpanachia@oneport365.com';
+/* Documents sales must upload for each customer classification (only Cash Before Service has a list so far) */
+const DOCS = {
+  new: [
+    { id: 'cac', t: 'Certificate of Incorporation (CAC)' },
+    { id: 'tax', t: 'Tax Clearance Certificate' },
+    { id: 'addr', t: 'Proof of Business Address' },
+  ],
+};
+const DOC_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg>';
+const fileSize = n => n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+/* Shows the required documents for the ticked classification, with an upload button for each */
+function sfDocs() {
+  const box = $('#sf-docs'); if (!box) return;
+  const list = DOCS[sfCls()] || [];
+  box.hidden = !list.length;
+  if (!list.length) { box.innerHTML = ''; return; }
+  const up = window._sfDocs;
+  box.innerHTML = `<div class="docs-h"><b>Documents required</b><span>${list.filter(d => up[d.id]).length} of ${list.length} uploaded</span></div>
+    <p class="sf-hint" style="margin:0 0 10px">Cash Before Service customers need these documents before Finance can review the profile. PDF, JPG or PNG.</p>
+    <div class="docs">${list.map(d => { const f = up[d.id]; return `<div class="doc ${f ? 'ok' : ''}" data-doc="${d.id}">
+      <span class="ic">${f ? ICON.check : DOC_ICON}</span>
+      <div class="tx"><b>${esc(d.t)}</b><small>${f ? `${esc(f.name)} · ${fileSize(f.size)}` : 'Not uploaded'}</small></div>
+      <label class="btn sm ${f ? '' : 'dark'}" for="sf-f-${d.id}">${f ? 'Replace' : 'Upload'}</label>
+      <input type="file" id="sf-f-${d.id}" accept=".pdf,.jpg,.jpeg,.png" hidden onchange="sfUpload(this, '${d.id}')">
+      ${f ? `<button class="linkbtn" onclick="sfRemove('${d.id}')">Remove</button>` : ''}</div>`; }).join('')}</div>`;
+}
+function sfUpload(input, id) {
+  const f = input.files && input.files[0]; if (!f) return;
+  if (!/\.(pdf|jpe?g|png)$/i.test(f.name)) { $('#sf-err').innerHTML = '<p class="err" style="margin:0">Upload a PDF, JPG or PNG file.</p>'; return; }
+  const old = window._sfDocs[id]; if (old && old.url) try { URL.revokeObjectURL(old.url); } catch (_) {}
+  window._sfDocs[id] = { name: f.name, size: f.size, type: f.type, url: URL.createObjectURL(f) };
+  $('#sf-err').innerHTML = ''; sfDocs();
+}
+function sfRemove(id) { delete window._sfDocs[id]; sfDocs(); }
+/* Preview an uploaded document (images show inline; other files show their details) */
+function viewDoc(dealId, id) {
+  const r = reviews[dealId], f = r.docs[id], d = Object.values(DOCS).flat().find(o => o.id === id);
+  const img = f.url && /^image\//.test(f.type);
+  modal(`<h3>${esc(d.t)}</h3><p class="lead">${esc(f.name)} · ${fileSize(f.size)} · uploaded by ${OWNERS[r.sentBy].name}</p>
+    ${img ? `<img src="${f.url}" alt="${esc(d.t)}" style="width:100%;border:1px solid var(--line);border-radius:8px">` : `<div class="empty-box">${DOC_ICON}<br>${esc(f.name)}<br><small>A preview of this file type isn't available in the prototype.</small></div>`}
+    <div class="mfoot" style="margin-top:16px"><button class="btn dark" onclick="closeModal()">Close</button></div>`);
+}
+function docsPanel(x, r) {
+  const list = DOCS[r.terms] || [];
+  if (!list.length) return '';
+  const docs = r.docs || {};
+  return `<div class="panel">${secH(DOC_ICON, 'Documents')}
+    <div class="docs">${list.map(d => { const f = docs[d.id]; return `<div class="doc ${f ? 'ok' : 'miss'}">
+      <span class="ic">${f ? ICON.check : ICON.warn}</span>
+      <div class="tx"><b>${esc(d.t)}</b><small>${f ? `${esc(f.name)} · ${fileSize(f.size)}` : 'Not uploaded'}</small></div>
+      ${f ? `<button class="btn sm" onclick="viewDoc('${x.id}', '${d.id}')">View</button>` : ''}</div>`; }).join('')}</div></div>`;
+}
 function sendFinanceModal(dealId, pending) {
   const x = dealById(dealId), r = reviews[dealId] || {};
   window._pending = pending || {};
+  window._sfDocs = { ...(r.docs || {}) };
   const a = { cls: r.terms ? [r.terms] : [] };
   modal(`<div class="mh"><h3>Customer Payment Terms · Qualifying Checklist</h3>
       <p class="lead">${esc(x.name)} · ${x.id}<br><i>Complete before any payment terms are agreed or communicated to the customer.</i></p>
@@ -1191,6 +1259,7 @@ function sendFinanceModal(dealId, pending) {
       <div class="kstep-l" id="sf-l">Step 1 of 3 · Customer classification</div></div>
     <div class="mb">
       <div class="kyc-sec" id="sf-s1"><h4>${KYC_SECTIONS[0].h} <small>(tick one)</small></h4>${kycField(KYC_SECTIONS[0].q[0], a)}
+        <div class="sf-docs" id="sf-docs" hidden></div>
         ${r.status === 'pending' ? `<div class="callout" style="margin:0 0 12px">${ICON.warn}<span>Already with Finance since ${longD(r.sentAt)}. Sending again updates the request and emails Finance.</span></div>` : ''}
         <p class="sf-hint">Steps 2 and 3 are completed by Finance. Once you tick one, the customer profile is emailed to Finance to review.</p></div>
       <div class="kyc-sec" id="sf-s2" hidden></div>
@@ -1201,6 +1270,8 @@ function sendFinanceModal(dealId, pending) {
       <div id="sf-err" style="flex-basis:100%"></div>
     </div>`, 'wide');
   $('.mf #sf-back').style.marginLeft = 'auto';
+  document.querySelectorAll('input[name="k-cls"]').forEach(i => i.addEventListener('change', sfDocs));
+  sfDocs();
 }
 function sfBack() {
   if ($('#sf-s2').hidden) return closeModal();
@@ -1213,6 +1284,11 @@ function sfNext(dealId) {
   if (!$('#sf-s2').hidden) return sendFinance(dealId);
   const cls = sfCls();
   if (!cls) { $('[data-q="cls"]').classList.add('bad'); $('#sf-err').innerHTML = '<p class="err" style="margin:0">Tick one customer classification to continue.</p>'; return; }
+  const need = DOCS[cls] || [], missing = need.filter(d => !window._sfDocs[d.id]);
+  if (missing.length) {
+    document.querySelectorAll('#sf-docs .doc').forEach(el => el.classList.toggle('bad', !window._sfDocs[el.dataset.doc]));
+    $('#sf-err').innerHTML = `<p class="err" style="margin:0">Upload all ${need.length} required documents to continue. Missing: ${missing.map(d => esc(d.t)).join(', ')}.</p>`; return;
+  }
   const x = dealById(dealId), p = window._pending || {}, c = companyOf(x), ct = contactOf(x), r = reviews[dealId] || {};
   const row = (k, v) => `<tr><th>${k}</th><td>${v || '<span style="color:var(--muted)">Not on file</span>'}</td></tr>`;
   $('#sf-s2').innerHTML = `<h4>Email to Finance</h4>
@@ -1228,6 +1304,7 @@ function sfNext(dealId) {
           ${row('Product', esc(x.product))}
           ${row('Deal amount', money(p.amount ?? x.amount))}
           ${row('Classification', `<b>${esc(CLS_LABEL[cls])}</b> (selected by sales)`)}
+          ${(DOCS[cls] || []).length ? row('Documents', DOCS[cls].map(d => `${esc(d.t)} <span style="color:var(--muted)">(${esc(window._sfDocs[d.id].name)})</span>`).join('<br>')) : ''}
         </tbody></table>
         <span class="mail-btn">Open customer profile review</span>
       </div>
@@ -1243,8 +1320,9 @@ function sendFinance(dealId) {
   const x = dealById(dealId), p = window._pending || {}, prev = reviews[dealId];
   Object.assign(x, { name: p.name ?? x.name, amount: p.amount ?? x.amount, cls: p.cls ?? x.cls });
   reviews[dealId] = { status: 'pending', a: prev && prev.a, sentBy: 'NM', sentAt: nowIso(), from: stageName(x),
-    terms: cls, note: $('#sf-n').value.trim(), mailedTo: FINANCE_MAIL };
-  addHistory(dealId, { t: 'Customer profile emailed to Finance for review', tag: 'Finance review', comment: `Classification: ${CLS_LABEL[cls]}${p.comment ? ` · ${p.comment}` : ''}` });
+    terms: cls, note: $('#sf-n').value.trim(), mailedTo: FINANCE_MAIL,
+    docs: (DOCS[cls] || []).length ? Object.fromEntries(DOCS[cls].map(d => [d.id, window._sfDocs[d.id]])) : undefined };
+  addHistory(dealId, { t: 'Customer profile emailed to Finance for review', tag: 'Finance review', comment: `Classification: ${CLS_LABEL[cls]}${(DOCS[cls] || []).length ? ` · ${DOCS[cls].length} documents attached` : ''}${p.comment ? ` · ${p.comment}` : ''}` });
   window._pending = null;
   closeModal(); toast(`Email sent to Finance · you'll be notified when ${x.name} is ready for Qualified`); render();
 }
@@ -1323,6 +1401,7 @@ function reviewView(x, ro) {
           ${kvi('Product type', esc(x.product))}
           ${kvi('Deal amount', `<span style="color:var(--gold);font-weight:600" class="tnum">${money(x.amount)}</span>`)}
         </div></div>
+      ${docsPanel(x, r)}
     </div>
     ${checklistPanel(x, r, ro)}
   </div>`;
@@ -1458,7 +1537,8 @@ function financeTracker(x) {
     steps = [['todo', 'Sent to Finance', 'Not sent yet'], ['todo', 'Under review by Finance', 'Waiting'], ['todo', 'Reviewed by Finance', 'Waiting']];
     foot = `<span>The customer profile is emailed to Finance when you move this deal to Qualified.</span><button class="btn sm primary" onclick="sendFinanceModal('${x.id}')">Send to Finance</button>`;
   } else {
-    const sent = ['done', 'Sent to Finance', `${when(r.sentAt, r.sentBy)}${r.mailedTo ? `<br>Emailed to ${esc(r.mailedTo)}` : ''}`];
+    const nd = r.docs ? Object.keys(r.docs).length : 0;
+    const sent = ['done', 'Sent to Finance', `${when(r.sentAt, r.sentBy)}${r.mailedTo ? `<br>Emailed to ${esc(r.mailedTo)}` : ''}${nd ? `<br>${nd} document${nd === 1 ? '' : 's'} attached` : ''}`];
     const opened = r.openedAt ? ['done', 'Under review by Finance', `Opened by ${when(r.openedAt, r.openedBy)}`] : null;
     if (r.status === 'pending') {
       pill = r.openedAt ? '<span class="pill review">Under Finance review</span>' : '<span class="pill review">Sent to Finance</span>';

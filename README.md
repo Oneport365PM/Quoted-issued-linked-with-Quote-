@@ -21,6 +21,11 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   contact details (person, role, email, phone, sales owner) and product details (product type, deal amount), next to the **Customer Payment Terms – Qualifying Checklist** in 3 steps: A. customer classification
   (tick one), B. onboarding requirements (tick all; the credit due-diligence item only applies to credit customers),
   C. clearance. "Finance and Internal Control involved from the onboarding stage" has been removed.
+- **Required documents:** when sales ticks *New customer: Cash Before Service*, the pop-up lists the documents that
+  classification needs, each with an Upload button (PDF, JPG or PNG): Certificate of Incorporation (CAC), Tax Clearance
+  Certificate and Proof of Business Address. Next stays blocked until all are uploaded. The email lists them, the deal
+  tracker shows how many were attached, and Finance (and sales, read only) see them in a **Documents** panel with a View
+  button. The lists live in `DOCS` in the page script, keyed by classification, so Advance Payment and Credit can get their own.
 - On the review page, step A (the classification sales picked) is **read only**. Finance completes only their part:
   step B onboarding requirements and step C clearance.
 - On step C Finance can add an optional **Comment for sales**. It is included in the notification and the deal history,
