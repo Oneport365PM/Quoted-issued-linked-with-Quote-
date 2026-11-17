@@ -626,6 +626,12 @@ const TERMS = {
 };
 const termsText = r => r && r.terms ? TERMS[r.terms].t + (r.termsNote ? ` · ${r.termsNote}` : '') : 'Not stated';
 
+const MANUCHAR_DOCS = {
+  app: { name: 'Manuchar_credit_application_signed.pdf', size: 412000, type: 'application/pdf' },
+  cac: { name: 'Manuchar_CAC_certificate.pdf', size: 238000, type: 'application/pdf' },
+  tax: { name: 'Manuchar_TCC_2026.pdf', size: 190000, type: 'application/pdf' },
+  addr: { name: 'Manuchar_utility_bill_Oct2026.pdf', size: 321000, type: 'application/pdf' },
+};
 const MANUCHAR_KYC = {
   cls: ['adv'],
   onb: ['framework', 'wc', 'deviation', 'documented'],
@@ -634,8 +640,8 @@ const MANUCHAR_KYC = {
 /* Finance review per deal. Sales sends the deal to Finance when it moves into Qualified;
    Finance checks the customer profile, completes the payment terms checklist, and the deal moves to Qualified. */
 const reviews = {
-  'OP-26-11-023': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T11:40', from: 'Contacted', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T16:05', finComment: 'Advance terms confirmed. Collect the 90% before the NAFDAC permit is filed.', openedBy: 'FA', openedAt: '2026-11-04T13:10', used: true },
-  'OP-26-11-024': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T10:20', from: 'Prospect', terms: 'adv', termsNote: '90% upfront, balance on delivery', reviewedBy: 'FA', reviewedAt: '2026-11-04T14:55', openedBy: 'FA', openedAt: '2026-11-04T12:30', used: true },
+  'OP-26-11-023': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T11:40', from: 'Contacted', terms: 'adv', termsNote: '90% upfront, balance on delivery', docs: MANUCHAR_DOCS, reviewedBy: 'FA', reviewedAt: '2026-11-04T16:05', finComment: 'Advance terms confirmed. Collect the 90% before the NAFDAC permit is filed.', openedBy: 'FA', openedAt: '2026-11-04T13:10', used: true },
+  'OP-26-11-024': { status: 'cleared', a: MANUCHAR_KYC, sentBy: 'KA', sentAt: '2026-11-04T10:20', from: 'Prospect', terms: 'adv', termsNote: '90% upfront, balance on delivery', docs: MANUCHAR_DOCS, reviewedBy: 'FA', reviewedAt: '2026-11-04T14:55', openedBy: 'FA', openedAt: '2026-11-04T12:30', used: true },
   'OP-26-10-014': { status: 'pending', sentBy: 'OA', sentAt: '2026-11-11T09:05', from: 'Contacted', terms: 'credit', termsNote: '30 days from invoice',
     note: 'Customer procurement policy only allows 30-day credit. Needs Internal Control credit assessment.' },
 };
@@ -1196,9 +1202,15 @@ function statusPill(r) {
 
 /* Sales picks the customer classification (checklist step A), then the customer profile is emailed to Finance */
 const FINANCE_MAIL = 'Nkechim@oneport365.com, okpanachia@oneport365.com';
-/* Documents sales must upload for each customer classification (only Cash Before Service has a list so far) */
+/* Documents sales must upload for each customer classification (Credit has no list yet) */
 const DOCS = {
   new: [
+    { id: 'cac', t: 'Certificate of Incorporation (CAC)' },
+    { id: 'tax', t: 'Tax Clearance Certificate' },
+    { id: 'addr', t: 'Proof of Business Address' },
+  ],
+  adv: [
+    { id: 'app', t: 'Completed Credit Application Form' },
     { id: 'cac', t: 'Certificate of Incorporation (CAC)' },
     { id: 'tax', t: 'Tax Clearance Certificate' },
     { id: 'addr', t: 'Proof of Business Address' },
@@ -1214,7 +1226,7 @@ function sfDocs() {
   if (!list.length) { box.innerHTML = ''; return; }
   const up = window._sfDocs;
   box.innerHTML = `<div class="docs-h"><b>Documents required</b><span>${list.filter(d => up[d.id]).length} of ${list.length} uploaded</span></div>
-    <p class="sf-hint" style="margin:0 0 10px">Cash Before Service customers need these documents before Finance can review the profile. PDF, JPG or PNG.</p>
+    <p class="sf-hint" style="margin:0 0 10px">${sfCls() === 'adv' ? 'Existing Advance Payment' : 'Cash Before Service'} customers need these documents before Finance can review the profile. PDF, JPG or PNG.</p>
     <div class="docs">${list.map(d => { const f = up[d.id]; return `<div class="doc ${f ? 'ok' : ''}" data-doc="${d.id}">
       <span class="ic">${f ? ICON.check : DOC_ICON}</span>
       <div class="tx"><b>${esc(d.t)}</b><small>${f ? `${esc(f.name)} · ${fileSize(f.size)}` : 'Not uploaded'}</small></div>
@@ -1232,7 +1244,7 @@ function sfUpload(input, id) {
 function sfRemove(id) { delete window._sfDocs[id]; sfDocs(); }
 /* Preview an uploaded document (images show inline; other files show their details) */
 function viewDoc(dealId, id) {
-  const r = reviews[dealId], f = r.docs[id], d = Object.values(DOCS).flat().find(o => o.id === id);
+  const r = reviews[dealId], f = r.docs[id], d = (DOCS[r.terms] || []).find(o => o.id === id);
   const img = f.url && /^image\//.test(f.type);
   modal(`<h3>${esc(d.t)}</h3><p class="lead">${esc(f.name)} · ${fileSize(f.size)} · uploaded by ${OWNERS[r.sentBy].name}</p>
     ${img ? `<img src="${f.url}" alt="${esc(d.t)}" style="width:100%;border:1px solid var(--line);border-radius:8px">` : `<div class="empty-box">${DOC_ICON}<br>${esc(f.name)}<br><small>A preview of this file type isn't available in the prototype.</small></div>`}
