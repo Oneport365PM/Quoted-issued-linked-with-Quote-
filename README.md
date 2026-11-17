@@ -36,7 +36,7 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   "Upload newer" to replace one). Finance sees the same On file note on the review page.
 - **Customer documents** (a tab on the Finance page) lists every customer with uploaded documents. Each opens that
   customer's own documents page (`#docs-<customer>`): the customer's deal IDs at the top, then every document across all
-  their deals, with file, uploader, date, deal and a View button. **Hide documents** / **Show documents** collapses the list. The review page's Documents panel links to it ("All customer documents").
+  their deals, with file, uploader, date, job and a View button. **Hide documents** / **Show documents** collapses the list. The review page's Documents panel links to it ("All customer documents").
 - On the review page, step A (the classification sales picked) is **read only**. Finance completes only their part:
   step B onboarding requirements and step C clearance.
 - On step C Finance can add an optional **Comment for sales**. It is included in the notification and the deal history,

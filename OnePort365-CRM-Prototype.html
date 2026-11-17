@@ -1312,7 +1312,7 @@ function customerDocsView(c) {
       <button class="btn sm" id="docs-tg" style="margin-left:auto" aria-expanded="true" aria-controls="docs-body" onclick="toggleDocs()">Hide documents</button></div>
     <div id="docs-body" style="margin-top:20px">
     <div class="table-wrap" style="border:0"><table class="doc-t">
-      <thead><tr><th>Document</th><th>File</th><th>Uploaded by</th><th>Date</th><th>Deal</th><th></th></tr></thead>
+      <thead><tr><th>Document</th><th>File</th><th>Uploaded by</th><th>Date</th><th>Job</th><th></th></tr></thead>
       <tbody>${c.docs.sort((a, b) => order(a) - order(b)).map(d => `<tr>
         <td><b>${esc(d.t)}</b></td><td>${esc(d.name)} <span style="color:var(--muted)">· ${fileSize(d.size)}</span></td>
         <td>${OWNERS[d.by].name}</td><td class="tnum">${dmy(d.at)}</td>
