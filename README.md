@@ -26,10 +26,11 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   - *New customer: Cash Before Service*: Certificate of Incorporation (CAC), Tax Clearance Certificate, Proof of Business Address.
   - *Existing Advance Payment customer*: Completed Credit Application Form, Certificate of Incorporation (CAC), Tax Clearance
     Certificate, Proof of Business Address.
-  - *Credit customer*: no list yet.
+  - *Credit customer*: Completed and signed Credit Application Form, Certificate of Incorporation (CAC), Tax Clearance
+    Certificate, Proof of Business Address, Insurance Certificate, Trade Transaction Records.
   The email lists them, the deal
   tracker shows how many were attached, and Finance (and sales, read only) see them in a **Documents** panel with a View
-  button. The lists live in `DOCS` in the page script, keyed by classification, so Credit can get its own.
+  button. The lists live in `DOCS` in the page script, keyed by classification.
 - On the review page, step A (the classification sales picked) is **read only**. Finance completes only their part:
   step B onboarding requirements and step C clearance.
 - On step C Finance can add an optional **Comment for sales**. It is included in the notification and the deal history,
