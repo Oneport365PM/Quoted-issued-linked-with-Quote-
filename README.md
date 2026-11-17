@@ -31,6 +31,9 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   The email lists them, the deal
   tracker shows how many were attached, and Finance (and sales, read only) see them in a **Documents** panel with a View
   button. The lists live in `DOCS` in the page script, keyed by classification.
+- **Customer documents** (a tab on the Finance page) lists every customer with uploaded documents. Each opens that
+  customer's own documents page (`#docs-<customer>`): every document across all their deals, with file, uploader, date,
+  deal and a View button. The review page's Documents panel links to it ("All customer documents").
 - On the review page, step A (the classification sales picked) is **read only**. Finance completes only their part:
   step B onboarding requirements and step C clearance.
 - On step C Finance can add an optional **Comment for sales**. It is included in the notification and the deal history,

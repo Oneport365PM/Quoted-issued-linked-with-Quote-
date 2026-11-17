@@ -425,6 +425,10 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .doc .tx b { display: block; font-size: 13.5px; font-weight: 600; }
 .doc .tx small { display: block; font-size: 12px; color: var(--ink-2); margin-top: 2px; overflow-wrap: anywhere; }
 .doc label.btn { cursor: pointer; }
+.doc-t tbody tr { cursor: default; }
+.doc-t tbody tr:hover { background: none; }
+.doc-t { min-width: 760px; }
+.pill svg { width: 12px; height: 12px; }
 .fin-cmt { background: var(--blue-soft); color: var(--ink); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.5; margin-top: 14px; overflow-wrap: anywhere; }
 .fin-cmt b { display: block; font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
 .ck-detail { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
@@ -747,9 +751,10 @@ function render() {
   if (navStack[navStack.length - 1] !== h) navStack.push(h);
   const id = h.toUpperCase();
   const v = $('#view');
-  const fin = h === 'finance' || h.startsWith('review-');
+  const fin = h === 'finance' || h.startsWith('review-') || h.startsWith('docs-');
   paintChrome(fin);
   if (h === 'finance') { v.innerHTML = financeView(); bindFinance(); }
+  else if (h.startsWith('docs-') && customerDocs().find(c => c.slug === h.slice(5))) { v.innerHTML = customerDocsView(customerDocs().find(c => c.slug === h.slice(5))); }
   else if (h.startsWith('profile-') && reviews[id.slice(8)] && dealById(id.slice(8))) v.innerHTML = reviewView(dealById(id.slice(8)), true);
   else if (h.startsWith('review-') && reviews[id.slice(7)] && dealById(id.slice(7))) { markOpened(id.slice(7)); v.innerHTML = reviewView(dealById(id.slice(7))); bindReview(); }
   else if (h.startsWith('op-') && dealById(id)) v.innerHTML = dealView(dealById(id));
@@ -1266,11 +1271,52 @@ function viewDoc(dealId, id) {
     ${img ? `<img src="${f.url}" alt="${esc(d.t)}" style="width:100%;border:1px solid var(--line);border-radius:8px">` : `<div class="empty-box">${DOC_ICON}<br>${esc(f.name)}<br><small>A preview of this file type isn't available in the prototype.</small></div>`}
     <div class="mfoot" style="margin-top:16px"><button class="btn dark" onclick="closeModal()">Close</button></div>`);
 }
-function docsPanel(x, r) {
+/* Every document uploaded for a customer, across all of its deals (latest upload of each document wins) */
+const slugOf = n => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+function customerDocs() {
+  const by = {};
+  Object.entries(reviews).forEach(([id, r]) => {
+    const x = dealById(id); if (!x || !r.docs) return;
+    const c = by[x.name] = by[x.name] || { name: x.name, slug: slugOf(x.name), docs: {}, deals: [], cls: r.terms, last: r.sentAt };
+    if (!c.deals.includes(id)) c.deals.push(id);
+    if (r.sentAt >= c.last) { c.last = r.sentAt; c.cls = r.terms; }
+    const titles = DOCS[r.terms] || [];
+    Object.entries(r.docs).forEach(([did, f]) => {
+      if (!f) return;
+      const prev = c.docs[did];
+      if (!prev || r.sentAt >= prev.at) c.docs[did] = { ...f, did, dealId: id, at: r.sentAt, by: r.sentBy, t: (titles.find(o => o.id === did) || {}).t || did };
+    });
+  });
+  return Object.values(by).map(c => ({ ...c, docs: Object.values(c.docs) })).sort((a, b) => b.last.localeCompare(a.last));
+}
+function customerDocsView(c) {
+  const x = dealById(c.deals[0]), co = companyOf(x);
+  const need = DOCS[c.cls] || [];
+  const order = d => { const i = need.findIndex(o => o.id === d.did); return i < 0 ? 99 : i; };
+  return `
+  <button class="back" onclick="ui.ftab = 'docs'; go('finance')">${ICON.back} Back to customer documents</button>
+  <div class="panel" style="margin-bottom:20px">
+    <div class="head" style="margin:0"><div><h2>${esc(c.name)}</h2>
+      <div class="ids"><span class="pill pass">${DOC_ICON} ${c.docs.length} documents</span><span class="idtag">${esc(CLS_LABEL[c.cls])}</span></div>
+      <div class="rv-meta">${co.industry ? `<span>${esc(co.industry)}</span>` : ''}${co.rc ? `<span>${esc(co.rc)}</span>` : ''}<span>Deals: ${c.deals.map(id => `<a class="idlink" href="#review-${id.toLowerCase()}">${id}</a>`).join(', ')}</span></div></div></div>
+  </div>
+  <div class="panel">${secH(DOC_ICON, 'Customer documents')}
+    <div class="table-wrap" style="border:0"><table class="doc-t">
+      <thead><tr><th>Document</th><th>File</th><th>Uploaded by</th><th>Date</th><th>Deal</th><th></th></tr></thead>
+      <tbody>${c.docs.sort((a, b) => order(a) - order(b)).map(d => `<tr>
+        <td><b>${esc(d.t)}</b></td><td>${esc(d.name)} <span style="color:var(--muted)">· ${fileSize(d.size)}</span></td>
+        <td>${OWNERS[d.by].name}</td><td class="tnum">${dmy(d.at)}</td>
+        <td><a class="idlink" href="#review-${d.dealId.toLowerCase()}">${d.dealId}</a></td>
+        <td><button class="btn sm" onclick="viewDoc('${d.dealId}', '${d.did}')">View</button></td></tr>`).join('')}</tbody></table></div>
+    ${need.filter(n => !c.docs.some(d => d.did === n.id)).map(n => `<div class="callout" style="margin:12px 0 0">${ICON.warn}<span>${esc(n.t)} not uploaded yet.</span></div>`).join('')}
+  </div>`;
+}
+function docsPanel(x, r, ro) {
   const list = DOCS[r.terms] || [];
   if (!list.length) return '';
   const docs = r.docs || {};
-  return `<div class="panel">${secH(DOC_ICON, 'Documents')}
+  const open = r.docs && !ro ? `<a class="btn sm" href="#docs-${slugOf(x.name)}" style="margin-left:auto">All customer documents ${ICON.go}</a>` : '';
+  return `<div class="panel"><div class="sec-h"><span class="ic">${DOC_ICON}</span><p class="sec-t">Documents</p>${open}</div>
     <div class="docs">${list.map(d => { const f = docs[d.id]; return `<div class="doc ${f ? 'ok' : 'miss'}">
       <span class="ic">${f ? ICON.check : ICON.warn}</span>
       <div class="tx"><b>${esc(d.t)}</b><small>${f ? `${esc(f.name)} · ${fileSize(f.size)}` : 'Not uploaded'}</small></div>
@@ -1360,10 +1406,20 @@ ui.ftab = 'pending';
 function financeView() {
   const rows = Object.entries(reviews).map(([id, r]) => ({ x: dealById(id), r })).filter(o => o.x && o.r.status !== 'withdrawn');
   const by = st => rows.filter(o => o.r.status === st);
-  const tabs = [['pending', 'Awaiting review'], ['cleared', 'Cleared']];
+  const custs = customerDocs();
+  const tabs = [['pending', 'Awaiting review', by('pending').length], ['cleared', 'Cleared', by('cleared').length], ['docs', 'Customer documents', custs.length]];
   const list = by(ui.ftab).sort((a, b) => (b.r.reviewedAt || b.r.sentAt).localeCompare(a.r.reviewedAt || a.r.sentAt));
+  const tabBar = `<div class="tabs" role="tablist">${tabs.map(([k, l, n]) => `<button class="tab ${ui.ftab === k ? 'on' : ''}" data-ft="${k}" role="tab" aria-selected="${ui.ftab === k}">${l}<span class="cnt">${n}</span></button>`).join('')}</div>`;
+  if (ui.ftab === 'docs') return tabBar + (custs.length ? `<div class="table-wrap"><table>
+    <thead><tr><th>Customer</th><th>Classification</th><th>Documents</th><th>Deals</th><th>Last uploaded</th><th></th></tr></thead>
+    <tbody>${custs.map(c => `<tr data-go="docs-${c.slug}" tabindex="0">
+      <td><b>${esc(c.name)}</b></td><td>${esc(CLS_LABEL[c.cls])}</td>
+      <td><span class="pill pass">${DOC_ICON} ${c.docs.length} uploaded</span></td>
+      <td>${c.deals.join(', ')}</td>
+      <td class="tnum">${dmy(c.last)} · ${time(c.last)}</td><td style="color:var(--green);font-weight:500">Open ${ICON.go}</td></tr>`).join('')}</tbody></table></div>`
+    : '<div class="empty-box">No customer documents yet. They appear here when sales uploads them with a customer profile.</div>');
   return `
-  <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button class="tab ${ui.ftab === k ? 'on' : ''}" data-ft="${k}" role="tab" aria-selected="${ui.ftab === k}">${l}<span class="cnt">${by(k).length}</span></button>`).join('')}</div>
+  ${tabBar}
   ${list.length ? `<div class="table-wrap"><table>
     <thead><tr><th>Deal</th><th>Company</th><th>Contact</th><th>Product</th><th>Amount</th><th>Requested terms</th><th>Sales owner</th><th>${ui.ftab === 'pending' ? 'Sent to Finance' : 'Reviewed'}</th><th>Status</th></tr></thead>
     <tbody>${list.map(({ x, r }) => `<tr data-go="review-${x.id.toLowerCase()}" tabindex="0">
@@ -1429,7 +1485,7 @@ function reviewView(x, ro) {
           ${kvi('Product type', esc(x.product))}
           ${kvi('Deal amount', `<span style="color:var(--gold);font-weight:600" class="tnum">${money(x.amount)}</span>`)}
         </div></div>
-      ${docsPanel(x, r)}
+      ${docsPanel(x, r, ro)}
     </div>
     ${checklistPanel(x, r, ro)}
   </div>`;
