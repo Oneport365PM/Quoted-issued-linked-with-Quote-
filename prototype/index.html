@@ -81,6 +81,8 @@ button { cursor: pointer; }
 .btn.sm { height: 32px; padding: 0 12px; font-size: 13px; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 a.btn { text-decoration: none; color: var(--ink); }
+a.idtag { text-decoration: none; color: var(--ink-2); }
+a.idtag:hover { border-color: #cfd8c8; color: var(--green); }
 .count { font-size: 12.5px; color: var(--ink-2); margin-bottom: 10px; }
 
 /* board */
@@ -1291,10 +1293,13 @@ function customerDocsView(c) {
   <button class="back" onclick="ui.ftab = 'docs'; go('finance')">${ICON.back} Back to customer documents</button>
   <div class="panel" style="margin-bottom:20px">
     <div class="head" style="margin:0"><div><h2>${esc(c.name)}</h2>
-      <div class="ids"><span class="pill pass">${DOC_ICON} ${c.docs.length} documents</span><span class="idtag">${esc(CLS_LABEL[c.cls])}</span></div>
-      <div class="rv-meta">${co.industry ? `<span>${esc(co.industry)}</span>` : ''}${co.rc ? `<span>${esc(co.rc)}</span>` : ''}<span>Deals: ${c.deals.map(id => `<a class="idlink" href="#review-${id.toLowerCase()}">${id}</a>`).join(', ')}</span></div></div></div>
+      <div class="ids">${c.deals.map(id => `<a class="idtag" href="#review-${id.toLowerCase()}" title="Open review for ${id}">${id}</a>`).join('')}</div>
+      <div class="rv-meta">${co.industry ? `<span>${esc(co.industry)}</span>` : ''}${co.rc ? `<span>${esc(co.rc)}</span>` : ''}</div></div></div>
   </div>
-  <div class="panel">${secH(DOC_ICON, 'Customer documents')}
+  <div class="panel">
+    <div class="sec-h" style="margin:0"><span class="ic">${DOC_ICON}</span><p class="sec-t">Customer documents</p>
+      <button class="btn sm" id="docs-tg" style="margin-left:auto" aria-expanded="true" aria-controls="docs-body" onclick="toggleDocs()">Hide documents</button></div>
+    <div id="docs-body" style="margin-top:20px">
     <div class="table-wrap" style="border:0"><table class="doc-t">
       <thead><tr><th>Document</th><th>File</th><th>Uploaded by</th><th>Date</th><th>Deal</th><th></th></tr></thead>
       <tbody>${c.docs.sort((a, b) => order(a) - order(b)).map(d => `<tr>
@@ -1303,7 +1308,14 @@ function customerDocsView(c) {
         <td><a class="idlink" href="#review-${d.dealId.toLowerCase()}">${d.dealId}</a></td>
         <td><button class="btn sm" onclick="viewDoc('${d.dealId}', '${d.did}')">View</button></td></tr>`).join('')}</tbody></table></div>
     ${need.filter(n => !c.docs.some(d => d.did === n.id)).map(n => `<div class="callout" style="margin:12px 0 0">${ICON.warn}<span>${esc(n.t)} not uploaded yet.</span></div>`).join('')}
+    </div>
   </div>`;
+}
+/* Hide or show the document list on a customer's documents page */
+function toggleDocs() {
+  const body = $('#docs-body'), btn = $('#docs-tg'), show = body.hidden;
+  body.hidden = !show; btn.textContent = show ? 'Hide documents' : `Show documents (${document.querySelectorAll('.doc-t tbody tr').length})`;
+  btn.setAttribute('aria-expanded', show);
 }
 function docsPanel(x, r, ro) {
   const list = DOCS[r.terms] || [];
