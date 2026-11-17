@@ -427,6 +427,7 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 .doc .tx b { display: block; font-size: 13.5px; font-weight: 600; }
 .doc .tx small { display: block; font-size: 12px; color: var(--ink-2); margin-top: 2px; overflow-wrap: anywhere; }
 .doc label.btn { cursor: pointer; }
+.onfile { color: var(--green); font-weight: 500; }
 .doc-t tbody tr { cursor: default; }
 .doc-t tbody tr:hover { background: none; }
 .doc-t { min-width: 760px; }
@@ -1248,14 +1249,16 @@ function sfDocs() {
   box.hidden = !list.length;
   if (!list.length) { box.innerHTML = ''; return; }
   const up = window._sfDocs;
-  box.innerHTML = `<div class="docs-h"><b>Documents required</b><span>${list.filter(d => up[d.id]).length} of ${list.length} uploaded</span></div>
+  const nOn = list.filter(d => up[d.id] && up[d.id].onFile).length, nMiss = list.filter(d => !up[d.id]).length;
+  box.innerHTML = `<div class="docs-h"><b>Documents required</b><span>${list.length - nMiss} of ${list.length} ready${nOn ? ` · ${nOn} on file` : ''}</span></div>
+    ${nOn ? `<div class="callout ok" style="margin:6px 0 10px">${ICON.check}<span>${nMiss ? `${nOn} of these documents are already on file for this customer, so you only need to upload the ${nMiss} missing.` : 'All these documents are already on file for this customer. No need to upload them again.'}</span></div>` : ''}
     <p class="sf-hint" style="margin:0 0 10px">${{ new: 'Cash Before Service', adv: 'Existing Advance Payment', credit: 'Credit' }[sfCls()]} customers need these documents before Finance can review the profile. PDF, JPG or PNG.</p>
     <div class="docs">${list.map(d => { const f = up[d.id]; return `<div class="doc ${f ? 'ok' : ''}" data-doc="${d.id}">
       <span class="ic">${f ? ICON.check : DOC_ICON}</span>
-      <div class="tx"><b>${esc(d.t)}</b><small>${f ? `${esc(f.name)} · ${fileSize(f.size)}` : 'Not uploaded'}</small></div>
-      <label class="btn sm ${f ? '' : 'dark'}" for="sf-f-${d.id}">${f ? 'Replace' : 'Upload'}</label>
+      <div class="tx"><b>${esc(d.t)}</b><small>${f ? `${esc(f.name)} · ${fileSize(f.size)}${f.onFile ? ` · <span class="onfile">On file since ${dmy(f.at)} (${f.dealId})</span>` : ''}` : 'Not uploaded'}</small></div>
+      <label class="btn sm ${f ? '' : 'dark'}" for="sf-f-${d.id}">${f ? (f.onFile ? 'Upload newer' : 'Replace') : 'Upload'}</label>
       <input type="file" id="sf-f-${d.id}" accept=".pdf,.jpg,.jpeg,.png" hidden onchange="sfUpload(this, '${d.id}')">
-      ${f ? `<button class="linkbtn" onclick="sfRemove('${d.id}')">Remove</button>` : ''}</div>`; }).join('')}</div>`;
+      ${f && !f.onFile ? `<button class="linkbtn" onclick="sfRemove('${d.id}')">Remove</button>` : ''}</div>`; }).join('')}</div>`;
 }
 function sfUpload(input, id) {
   const f = input.files && input.files[0]; if (!f) return;
@@ -1269,7 +1272,7 @@ function sfRemove(id) { delete window._sfDocs[id]; sfDocs(); }
 function viewDoc(dealId, id) {
   const r = reviews[dealId], f = r.docs[id], d = (DOCS[r.terms] || []).find(o => o.id === id);
   const img = f.url && /^image\//.test(f.type);
-  modal(`<h3>${esc(d.t)}</h3><p class="lead">${esc(f.name)} · ${fileSize(f.size)} · uploaded by ${OWNERS[r.sentBy].name}</p>
+  modal(`<h3>${esc(d.t)}</h3><p class="lead">${esc(f.name)} · ${fileSize(f.size)} · uploaded by ${OWNERS[f.onFile ? f.by : r.sentBy].name}${f.onFile ? ` with ${f.dealId}` : ''}</p>
     ${img ? `<img src="${f.url}" alt="${esc(d.t)}" style="width:100%;border:1px solid var(--line);border-radius:8px">` : `<div class="empty-box">${DOC_ICON}<br>${esc(f.name)}<br><small>A preview of this file type isn't available in the prototype.</small></div>`}
     <div class="mfoot" style="margin-top:16px"><button class="btn dark" onclick="closeModal()">Close</button></div>`);
 }
@@ -1286,7 +1289,9 @@ function customerDocs() {
     Object.entries(r.docs).forEach(([did, f]) => {
       if (!f) return;
       const prev = c.docs[did];
-      if (!prev || r.sentAt >= prev.at) c.docs[did] = { ...f, did, dealId: id, at: r.sentAt, by: r.sentBy, t: (titles.find(o => o.id === did) || {}).t || did };
+      const src = f.onFile ? { dealId: f.dealId, at: f.at, by: f.by } : { dealId: id, at: r.sentAt, by: r.sentBy };
+      const t = (titles.find(o => o.id === did) || {}).t || (prev && prev.t) || did;
+      if (!prev || src.at > prev.at) c.docs[did] = { ...f, onFile: false, did, ...src, t };
     });
   });
   return Object.values(by).map(c => ({ ...c, docs: Object.values(c.docs) })).sort((a, b) => b.last.localeCompare(a.last));
@@ -1331,13 +1336,14 @@ function docsPanel(x, r, ro) {
   return `<div class="panel"><div class="sec-h"><span class="ic">${DOC_ICON}</span><p class="sec-t">Documents</p>${open}</div>
     <div class="docs">${list.map(d => { const f = docs[d.id]; return `<div class="doc ${f ? 'ok' : 'miss'}">
       <span class="ic">${f ? ICON.check : ICON.warn}</span>
-      <div class="tx"><b>${esc(d.t)}</b><small>${f ? `${esc(f.name)} · ${fileSize(f.size)}` : 'Not uploaded'}</small></div>
+      <div class="tx"><b>${esc(d.t)}</b><small>${f ? `${esc(f.name)} · ${fileSize(f.size)}${f.onFile ? ` · <span class="onfile">On file since ${dmy(f.at)} (${f.dealId})</span>` : ''}` : 'Not uploaded'}</small></div>
       ${f ? `<button class="btn sm" onclick="viewDoc('${x.id}', '${d.id}')">View</button>` : ''}</div>`; }).join('')}</div></div>`;
 }
 function sendFinanceModal(dealId, pending) {
   const x = dealById(dealId), r = reviews[dealId] || {};
   window._pending = pending || {};
-  window._sfDocs = { ...(r.docs || {}) };
+  const onFile = (customerDocs().find(c => c.name === x.name) || { docs: [] }).docs;
+  window._sfDocs = Object.fromEntries(onFile.map(d => [d.did, { name: d.name, size: d.size, type: d.type, url: d.url, onFile: true, dealId: d.dealId, at: d.at, by: d.by }]));
   const a = { cls: r.terms ? [r.terms] : [] };
   modal(`<div class="mh"><h3>Customer Payment Terms · Qualifying Checklist</h3>
       <p class="lead">${esc(x.name)} · ${x.id}<br><i>Complete before any payment terms are agreed or communicated to the customer.</i></p>
@@ -1390,7 +1396,7 @@ function sfNext(dealId) {
           ${row('Product', esc(x.product))}
           ${row('Deal amount', money(p.amount ?? x.amount))}
           ${row('Classification', `<b>${esc(CLS_LABEL[cls])}</b> (selected by sales)`)}
-          ${(DOCS[cls] || []).length ? row('Documents', DOCS[cls].map(d => `${esc(d.t)} <span style="color:var(--muted)">(${esc(window._sfDocs[d.id].name)})</span>`).join('<br>')) : ''}
+          ${(DOCS[cls] || []).length ? row('Documents', DOCS[cls].map(d => `${esc(d.t)} <span style="color:var(--muted)">(${window._sfDocs[d.id].onFile ? 'on file' : esc(window._sfDocs[d.id].name)})</span>`).join('<br>')) : ''}
         </tbody></table>
       </div>
     </div>
@@ -1407,7 +1413,7 @@ function sendFinance(dealId) {
   reviews[dealId] = { status: 'pending', a: prev && prev.a, sentBy: 'NM', sentAt: nowIso(), from: stageName(x),
     terms: cls, note: $('#sf-n').value.trim(), mailedTo: FINANCE_MAIL,
     docs: (DOCS[cls] || []).length ? Object.fromEntries(DOCS[cls].map(d => [d.id, window._sfDocs[d.id]])) : undefined };
-  addHistory(dealId, { t: 'Customer profile emailed to Finance for review', tag: 'Finance review', comment: `Classification: ${CLS_LABEL[cls]}${(DOCS[cls] || []).length ? ` · ${DOCS[cls].length} documents attached` : ''}${p.comment ? ` · ${p.comment}` : ''}` });
+  addHistory(dealId, { t: 'Customer profile emailed to Finance for review', tag: 'Finance review', comment: `Classification: ${CLS_LABEL[cls]}${(DOCS[cls] || []).length ? ` · ${DOCS[cls].length} documents (${DOCS[cls].filter(d => window._sfDocs[d.id].onFile).length} already on file)` : ''}${p.comment ? ` · ${p.comment}` : ''}` });
   window._pending = null;
   closeModal(); toast(`Email sent to Finance · you'll be notified when ${x.name} is ready for Qualified`); render();
 }

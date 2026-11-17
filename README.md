@@ -31,6 +31,9 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   The email lists them, the deal
   tracker shows how many were attached, and Finance (and sales, read only) see them in a **Documents** panel with a View
   button. The lists live in `DOCS` in the page script, keyed by classification.
+- **Documents already on file are not asked for again.** If the customer uploaded a document with an earlier deal, the
+  pop-up shows it as "On file since <date> (<deal>)" and counts it as done; sales only uploads what is missing (or
+  "Upload newer" to replace one). Finance sees the same On file note on the review page.
 - **Customer documents** (a tab on the Finance page) lists every customer with uploaded documents. Each opens that
   customer's own documents page (`#docs-<customer>`): the customer's deal IDs at the top, then every document across all
   their deals, with file, uploader, date, deal and a View button. **Hide documents** / **Show documents** collapses the list. The review page's Documents panel links to it ("All customer documents").
