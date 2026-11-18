@@ -1058,39 +1058,35 @@ const RFQ_OPTS = {
   cur: ['USD', 'NGN', 'EUR', 'GBP'],
 };
 const UPLOAD_IC = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5M4 16v4h16v-4"/></svg>';
-/* pick a port from the deal's route text, e.g. "Apapa, Nigeria → Rotterdam, Netherlands" */
-const portFrom = txt => { const w = (txt || '').split(',')[0].trim().toLowerCase(); return w ? RFQ_OPTS.ports.find(p => p.toLowerCase().startsWith(w)) || '' : ''; };
 const rfOpts = (list, v, ph = 'Select') => `<option value="">${ph}</option>` + list.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('');
 const rf = (id, label, inner, req, cls = '') => `<div class="rf ${cls}" data-rf="${id}"><label class="lb" for="${id}">${label}${req ? '<span class="req">*</span>' : ''}</label>${inner}</div>`;
 function rfqFormView(x) {
-  const [from, to] = (x.route || '').split('→').map(t => t.trim());
-  const pol = portFrom(from), pod = portFrom(to);
-  const exp = /nigeria/i.test(from || '');
-  const svc = /air/i.test(x.product) ? 'Air Freight' : /haul/i.test(x.product) ? 'Haulage' : /custom/i.test(x.product) ? 'Customs Brokerage' : 'Ocean Freight (FCL)';
+  /* only Company Name, Email and Owner are filled in from the deal; everything else starts empty */
   const contacts = Object.keys(companyOf(x).contacts || {}); if (!contacts.includes(x.contact)) contacts.unshift(x.contact);
   const companies = [...new Set(deals.map(d => d.name))];
   return `
   <button class="back grey" onclick="go('${x.id.toLowerCase()}')">${ICON.back} Back to deal</button>
   <form class="rfq-form" id="rfq-form" novalidate onsubmit="event.preventDefault(); submitRfq('${x.id}')">
     <div class="rfq-fh"><h2>Create new RFQ</h2><p>Log a new request for quote</p></div>
-    <div class="dealstrip">${ICON.check}<span>Generated from deal <b>${x.id}</b> · ${esc(x.name)}. The RFQ links to this deal when you submit it.</span></div>
+    <div class="dealstrip">${ICON.check}<span>Generated from deal <b>${x.id}</b>. Company name, email and owner are filled in from the deal; complete the rest. The RFQ links to this deal when you submit it.</span></div>
     <div class="rf-grid">
-      ${rf('rq-svc', 'Service Type', `<select id="rq-svc">${rfOpts(RFQ_OPTS.service, svc)}</select>`, 0, 'full')}
-      ${rf('rq-ship', 'Shipment Type', `<select id="rq-ship">${rfOpts(RFQ_OPTS.shipment, x.route ? (exp ? 'Export' : 'Import') : '')}</select>`, 1)}
+      ${rf('rq-svc', 'Service Type', `<select id="rq-svc">${rfOpts(RFQ_OPTS.service, '')}</select>`, 0, 'full')}
+      ${rf('rq-ship', 'Shipment Type', `<select id="rq-ship">${rfOpts(RFQ_OPTS.shipment, '')}</select>`, 1)}
       ${rf('rq-co', 'Company Name', `<input id="rq-co" list="rq-co-list" placeholder="Search Companies" value="${esc(x.name)}" oninput="rqCompany()"><datalist id="rq-co-list">${companies.map(c => `<option value="${esc(c)}">`).join('')}</datalist>`, 1)}
-      ${rf('rq-ct', 'Contact', `<select id="rq-ct">${rfOpts(contacts, x.contact, 'Select a company first')}</select>`, 1)}
-      ${rf('rq-pol', 'Port of Loading', `<select id="rq-pol">${rfOpts(RFQ_OPTS.ports, pol)}</select>`, 1)}
-      ${rf('rq-pod', 'Port of Destination', `<select id="rq-pod">${rfOpts(RFQ_OPTS.ports, pod)}</select>`, 1)}
+      ${rf('rq-ct', 'Contact', `<select id="rq-ct" onchange="rqContact()">${rfOpts(contacts, '')}</select>`, 1)}
+      ${rf('rq-em', 'Email', `<input id="rq-em" type="email" placeholder="Enter Email" value="${esc(contactOf(x).email || '')}">`, 1)}
+      ${rf('rq-pol', 'Port of Loading', `<select id="rq-pol">${rfOpts(RFQ_OPTS.ports, '')}</select>`, 1)}
+      ${rf('rq-pod', 'Port of Destination', `<select id="rq-pod">${rfOpts(RFQ_OPTS.ports, '')}</select>`, 1)}
       ${rf('rq-own', 'Owner', `<select id="rq-own">${`<option value="">Select</option>` + Object.entries(OWNERS).filter(([k]) => k !== 'SYS' && k !== 'FA').map(([k, o]) => `<option value="${k}" ${k === x.owner ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}</select>`, 1)}
       ${rf('rq-val', 'Total Value of Goods', `<span class="unit"><select id="rq-cur" aria-label="Currency">${RFQ_OPTS.cur.map(c => `<option>${c}</option>`).join('')}</select></span><input id="rq-val" type="number" min="0" step="any" placeholder="Enter Value of Goods">`, 1)}
       ${rf('rq-bl', 'B/L Number', `<input id="rq-bl" placeholder="Enter B/L Number">`, 0)}
       ${rf('rq-inc', 'Incoterms', `<select id="rq-inc">${rfOpts(RFQ_OPTS.incoterms, '')}</select>`, 1)}
-      ${rf('rq-br', 'Branch', `<select id="rq-br">${rfOpts(RFQ_OPTS.branch, 'Lagos')}</select>`, 1)}
+      ${rf('rq-br', 'Branch', `<select id="rq-br">${rfOpts(RFQ_OPTS.branch, '')}</select>`, 1)}
     </div>
     <h3 class="rfq-sh">Container Details</h3>
     <div class="rf-grid">
       ${rf('rq-cls', 'Class', `<select id="rq-cls">${rfOpts(RFQ_OPTS.cls, '')}</select>`, 1)}
-      ${rf('rq-com', 'Commodity Description', `<input id="rq-com" placeholder="E.g. Rice" value="${esc(x.commodity || '')}">`, 1)}
+      ${rf('rq-com', 'Commodity Description', `<input id="rq-com" placeholder="E.g. Rice">`, 1)}
       ${rf('rq-cnt', 'Container Count', `<input id="rq-cnt" type="number" min="1" step="1" placeholder="Enter Container Count">`, 1)}
       ${rf('rq-wt', 'Container Weight', `<span class="unit"><select id="rq-wu" aria-label="Weight unit"><option>KG</option><option>TON</option></select></span><input id="rq-wt" type="number" min="0" step="any" placeholder="Enter Container Weight">`, 1)}
       ${rf('rq-size', 'Container Size', `<select id="rq-size">${rfOpts(RFQ_OPTS.size, '')}</select>`, 1)}
@@ -1099,9 +1095,9 @@ function rfqFormView(x) {
       ${rf('rq-pl', 'Packing List', `<label class="rf-up" for="rq-pl"><span id="rq-pl-n">Upload Packing List</span>${UPLOAD_IC}</label><input type="file" id="rq-pl" hidden onchange="rqFile(this)">`, 0)}
       ${rf('rq-pi', 'Proforma Invoice', `<label class="rf-up" for="rq-pi"><span id="rq-pi-n">Upload Proforma Invoice</span>${UPLOAD_IC}</label><input type="file" id="rq-pi" hidden onchange="rqFile(this)">`, 0)}
       <div class="rf-q"><span>Is each container of the same size and type?</span>
-        <label><input type="checkbox" name="rq-same" value="yes" checked onchange="rqOne(this)"> Yes</label>
+        <label><input type="checkbox" name="rq-same" value="yes" onchange="rqOne(this)"> Yes</label>
         <label><input type="checkbox" name="rq-same" value="no" onchange="rqOne(this)"> No</label></div>
-      ${rf('rq-notes', 'Notes', `<textarea id="rq-notes" placeholder="Add a Comment or Update">${esc(x.note || '')}</textarea>`, 0, 'full')}
+      ${rf('rq-notes', 'Notes', `<textarea id="rq-notes" placeholder="Add a Comment or Update"></textarea>`, 0, 'full')}
     </div>
     <h3 class="rfq-sh" style="margin-bottom:2px">Additional Services</h3>
     <p class="rfq-sub">Select any additional services you require</p>
@@ -1116,19 +1112,27 @@ function rfqFormView(x) {
 function rqCompany() {
   const name = $('#rq-co').value.trim(), d = deals.find(o => o.name.toLowerCase() === name.toLowerCase());
   const cs = d ? [...new Set([...Object.keys(companyOf(d).contacts || {}), ...deals.filter(o => o.name === d.name).map(o => o.contact)])] : [];
-  const sel = $('#rq-ct'); sel.innerHTML = rfOpts(cs, cs[0] || '', cs.length ? 'Select' : 'Select a company first'); sel.disabled = !cs.length;
+  const sel = $('#rq-ct'); sel.innerHTML = rfOpts(cs, '', cs.length ? 'Select' : 'Select a company first'); sel.disabled = !cs.length;
+  $('#rq-em').value = d ? (Object.values(companyOf(d).contacts || {})[0] || {}).email || '' : '';
   $('[data-rf="rq-ct"]').classList.toggle('dis', !cs.length);
+}
+/* picking a contact fills in that contact's email */
+function rqContact() {
+  const d = deals.find(o => o.name.toLowerCase() === $('#rq-co').value.trim().toLowerCase());
+  const c = d && (companyOf(d).contacts || {})[$('#rq-ct').value];
+  if (c && c.email) $('#rq-em').value = c.email;
 }
 function rqFile(input) { const f = input.files && input.files[0]; if (f) $(`#${input.id}-n`).textContent = f.name; }
 function rqOne(el) { if (el.checked) document.querySelectorAll('input[name="rq-same"]').forEach(i => { if (i !== el) i.checked = false; }); }
 function rqSvc(b) { const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on); b.classList.toggle('on', on); }
 function submitRfq(dealId) {
   const x = dealById(dealId), v = id => ($('#' + id).value || '').trim();
-  const req = [['rq-ship', 'Shipment Type'], ['rq-co', 'Company Name'], ['rq-ct', 'Contact'], ['rq-pol', 'Port of Loading'], ['rq-pod', 'Port of Destination'], ['rq-own', 'Owner'],
+  const req = [['rq-ship', 'Shipment Type'], ['rq-co', 'Company Name'], ['rq-ct', 'Contact'], ['rq-em', 'Email'], ['rq-pol', 'Port of Loading'], ['rq-pod', 'Port of Destination'], ['rq-own', 'Owner'],
     ['rq-val', 'Total Value of Goods'], ['rq-inc', 'Incoterms'], ['rq-br', 'Branch'], ['rq-cls', 'Class'], ['rq-com', 'Commodity Description'],
     ['rq-cnt', 'Container Count'], ['rq-wt', 'Container Weight'], ['rq-size', 'Container Size'], ['rq-type', 'Container Type']];
   document.querySelectorAll('.rf.bad').forEach(e => e.classList.remove('bad'));
   const miss = req.filter(([id]) => !v(id));
+  if (v('rq-em') && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('rq-em'))) miss.push(['rq-em', 'Email (enter a valid address)']);
   if (v('rq-pol') && v('rq-pol') === v('rq-pod')) miss.push(['rq-pod', 'Port of Destination (must differ from Port of Loading)']);
   if (miss.length) {
     miss.forEach(([id]) => $(`[data-rf="${id}"]`).classList.add('bad'));
@@ -1143,7 +1147,7 @@ function submitRfq(dealId) {
   const extra = [...document.querySelectorAll('.rf-svc.on')].map(b => b.textContent.replace('Add ', '').trim());
   const wt = +v('rq-wt') * (v('rq-wu') === 'TON' ? 1000 : 1);
   rfqs[id] = { id, status: 'New', quoteStatus: 'Not started', created: nowIso(), dealId: x.id,
-    service: v('rq-svc') || 'Ocean Freight (FCL)', shipmentType: v('rq-ship'), customer: v('rq-co'), contact: v('rq-ct'), email: contactOf(x).email || '',
+    service: v('rq-svc') || 'Ocean Freight (FCL)', shipmentType: v('rq-ship'), customer: v('rq-co'), contact: v('rq-ct'), email: v('rq-em'),
     origin: pol, destination: pod, routeShort: `${short(pol)} → ${short(pod)}`,
     goodsValue: `${v('rq-cur')} ${(+v('rq-val')).toLocaleString('en-US')}`, bl: v('rq-bl') || '—', branch: v('rq-br'), source: 'CRM', incoterm: v('rq-inc'), owner: v('rq-own'),
     documents: files.length ? files.join(', ') : '—', notes: [v('rq-notes'), extra.length ? `Additional services: ${extra.join(', ')}` : ''].filter(Boolean).join(' · ') || '—',
