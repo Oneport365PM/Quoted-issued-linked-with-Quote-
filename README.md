@@ -52,6 +52,10 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   Only the Finance page (`#review-op-…`, from the $ icon) lets Finance tick steps B and C.
 - The checklist pops up on every move into Qualified, even for a deal already with Finance (sending again updates the request).
 - Sample reviews: `OP-26-10-014` (Chevron) is awaiting Finance; the Manuchar deals are cleared.
+- **Generate RFQ:** a deal in **Qualified** has a **Generate RFQ** button on its page. It opens the RFQ module's
+  *Create new RFQ* form (`#rfq-new-op-…`), laid out like the live form and prefilled from the deal (service, shipment type,
+  company, contact, ports from the route, owner, commodity, notes). Required fields are marked * and checked on submit.
+  **Create RFQ** creates the next RFQ number, links it to the deal (deal page RFQ field, board chip, deal history) and opens it.
 - Board cards can be dragged between columns (on touch screens: press and hold, then drag). Dropping any deal on Qualified opens
   "Send to Finance"; the card moves only when Finance clears it (Cancel leaves it where it was). Dropping on Quote
   Issued moves the deal even with no quote yet; dropping on Closed asks Won or Lost.
