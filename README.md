@@ -5,7 +5,9 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
 
 - RFQs, quotes and shipments are linked to deals by the system, never by hand.
 - Every deal has an ID (`OP-YY-MM-NNN`), shown on board cards, the list view and the deal page.
-- Stage rule: an RFQ is tied to a deal in **Qualified**; a quote is tied to a deal in **Quote Issued**. Each deal shows only the records tied to it.
+- Stage rule: an RFQ is tied to a deal in **Qualified**; a quote is tied to a deal in **Quote Issued**. The deal page shows an
+  **RFQ** field for its RFQs and, once a quote exists, a **Quote** field (with status) for quotes linked to the deal or raised
+  from its RFQ.
 - Every RFQ, quote and deal number is a clickable link wherever it appears (board chips, list view,
   RFQ / Quote field in Deal Information, RFQ page, quote Booking Details). Deal history does not show RFQ or quote links.
 - `RFQ-26-11-015` (Manuchar Trading House Int Nigeria) is linked to the Qualified deal `OP-26-11-023`.
