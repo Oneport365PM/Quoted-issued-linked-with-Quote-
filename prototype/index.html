@@ -460,6 +460,11 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
 @media (max-width: 560px) { .rf-grid { grid-template-columns: minmax(0, 1fr); } .rfq-form { padding: 18px 16px; } }
 .qlinks { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .qlinks span { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.nr-hint { font-size: 11.5px; color: var(--muted); }
+.field label .req, .field .req { color: var(--red); }
+.nr-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 0 0 14px; }
+.nr-sum span { display: block; font-size: 10.5px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); }
+.nr-sum b { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
 .fin-cmt { background: var(--blue-soft); color: var(--ink); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.5; margin-top: 14px; overflow-wrap: anywhere; }
 .fin-cmt b { display: block; font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
 .ck-detail { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
@@ -539,7 +544,7 @@ a.chip:hover { filter: brightness(.96); text-decoration: underline; }
     <a class="ico on" id="r-crm" href="#pipeline" title="CRM" aria-label="CRM"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16M7 16v-5M12 16V7M17 16v-8"/></svg></a>
     <div class="ico" title="Customers"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.7 3 2.5 3.5 5.2"/></svg></div>
     <div class="ico" title="Shipments"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15h18l-2 4H5zM6 15V9h12v6M9 9V6h6v3"/></svg></div>
-    <div class="ico" id="r-rfq" title="RFQs"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M9 11h6M9 15h6"/></svg></div>
+    <a class="ico" id="r-rfq" href="#rfqs" title="RFQs" aria-label="RFQs"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M9 11h6M9 15h6"/></svg></a>
     <div class="ico" title="Quotes"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg></div>
     <a class="ico" id="r-fin" href="#finance" title="Finance · customer reviews" aria-label="Finance customer reviews"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M15 9c-.5-1-1.6-1.6-3-1.6-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.4-1.3 2.3-3 2.3-1.5 0-2.6-.6-3.1-1.7M12 6v1.4M12 16.6V18"/></svg></a>
     <div class="ico" title="Insights"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v16M8 5a4 4 0 0 0-3 6 4 4 0 0 0 3 7M16 5a4 4 0 0 1 3 6 4 4 0 0 1-3 7"/></svg></div>
@@ -784,8 +789,9 @@ function render() {
   const v = $('#view');
   const fin = h === 'finance' || h.startsWith('review-') || h.startsWith('docs-');
   const newRfq = h.startsWith('rfq-new-') && dealById(id.slice(8));
-  paintChrome(fin ? 'fin' : h.startsWith('rfq-') ? 'rfq' : 'crm');
+  paintChrome(fin ? 'fin' : h.startsWith('rfq') ? 'rfq' : 'crm');
   if (newRfq) v.innerHTML = rfqFormView(dealById(id.slice(8)));
+  else if (h === 'rfqs') v.innerHTML = rfqListView();
   else if (h === 'finance') { v.innerHTML = financeView(); bindFinance(); }
   else if (h.startsWith('docs-') && customerDocs().find(c => c.slug === h.slice(5))) { v.innerHTML = customerDocsView(customerDocs().find(c => c.slug === h.slice(5))); }
   else if (h.startsWith('profile-') && reviews[id.slice(8)] && dealById(id.slice(8))) v.innerHTML = reviewView(dealById(id.slice(8)), true);
@@ -1005,7 +1011,7 @@ function dealView(x) {
   <div class="panel" style="margin-bottom:20px">
     <div class="head" style="margin:0">
       <div><h2>${esc(x.name)}</h2><div class="ids"><span class="idtag">${x.id}</span>${stageBadge(x)}${x.outcome ? '' : reviewPill(x.id)}</div></div>
-      <div class="rv-acts">${x.stage === 'qualified' && !x.outcome ? `<button class="btn primary" onclick="go('rfq-new-${x.id.toLowerCase()}')">${ICON.rfq} Generate RFQ</button>` : ''}<button class="btn" onclick="editDealModal('${x.id}')">Edit ${ICON.pen}</button></div>
+      <div class="rv-acts">${x.stage === 'qualified' && !x.outcome ? `<button class="btn primary" onclick="ui.rfqEntry = null; go('rfq-new-${x.id.toLowerCase()}')">${ICON.rfq} Generate RFQ</button>` : ''}<button class="btn" onclick="editDealModal('${x.id}')">Edit ${ICON.pen}</button></div>
     </div>
   </div>
   <div class="grid2">
@@ -1064,16 +1070,19 @@ const UPLOAD_IC = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" s
 const rfOpts = (list, v, ph = 'Select') => `<option value="">${ph}</option>` + list.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('');
 const rf = (id, label, inner, req, cls = '') => `<div class="rf ${cls}" data-rf="${id}"><label class="lb" for="${id}">${label}${req ? '<span class="req">*</span>' : ''}</label>${inner}</div>`;
 function rfqFormView(x) {
-  /* only Company Name, Email and Owner are filled in from the deal; everything else starts empty */
+  /* only Company Name, Email and Owner are filled in from the deal; everything else starts empty.
+     Opened from the RFQ module, the service type picked in the New RFQ pop-up is kept too. */
+  const entry = ui.rfqEntry && ui.rfqEntry.dealId === x.id ? ui.rfqEntry : null, fromRfqs = !!entry;
   const contacts = Object.keys(companyOf(x).contacts || {}); if (!contacts.includes(x.contact)) contacts.unshift(x.contact);
   const companies = [...new Set(deals.map(d => d.name))];
   return `
-  <button class="back grey" onclick="go('${x.id.toLowerCase()}')">${ICON.back} Back to deal</button>
+  ${fromRfqs ? `<button class="back grey" onclick="go('rfqs')">${ICON.back} Back to RFQs</button>` : `<button class="back grey" onclick="go('${x.id.toLowerCase()}')">${ICON.back} Back to deal</button>`}
   <form class="rfq-form" id="rfq-form" novalidate onsubmit="event.preventDefault(); submitRfq('${x.id}')">
     <div class="rfq-fh"><h2>Create new RFQ</h2><p>Log a new request for quote</p></div>
-    <div class="dealstrip">${ICON.check}<span>Generated from deal <b>${x.id}</b>. Company name, email and owner are filled in from the deal; complete the rest. The RFQ links to this deal when you submit it.</span></div>
+    ${fromRfqs ? `<div class="dealstrip">${ICON.check}<span>Linked to deal <b>${x.id}</b> · ${esc(x.name)} · <b class="tnum">${money(x.amount)}</b>. Company name, email and owner are filled in from the deal; complete the rest.</span></div>`
+      : `<div class="dealstrip">${ICON.check}<span>Generated from deal <b>${x.id}</b>. Company name, email and owner are filled in from the deal; complete the rest. The RFQ links to this deal when you submit it.</span></div>`}
     <div class="rf-grid">
-      ${rf('rq-svc', 'Service Type', `<select id="rq-svc">${rfOpts(RFQ_OPTS.service, '')}</select>`, 0, 'full')}
+      ${rf('rq-svc', 'Service Type', `<select id="rq-svc">${rfOpts(RFQ_OPTS.service, fromRfqs ? entry.service : '')}</select>`, 0, 'full')}
       ${rf('rq-ship', 'Shipment Type', `<select id="rq-ship">${rfOpts(RFQ_OPTS.shipment, '')}</select>`, 1)}
       ${rf('rq-co', 'Company Name', `<input id="rq-co" list="rq-co-list" placeholder="Search Companies" value="${esc(x.name)}" oninput="rqCompany()"><datalist id="rq-co-list">${companies.map(c => `<option value="${esc(c)}">`).join('')}</datalist>`, 1)}
       ${rf('rq-ct', 'Contact', `<select id="rq-ct" onchange="rqContact()">${rfOpts(contacts, '')}</select>`, 1)}
@@ -1109,8 +1118,45 @@ function rfqFormView(x) {
       <button type="button" class="rf-svc" aria-pressed="false" onclick="rqSvc(this)">${ICON.rfq} Add Customs Brokerage</button>
     </div>
     <div id="rq-err"></div>
-    <div class="rfq-ff"><button type="button" class="btn" onclick="go('${x.id.toLowerCase()}')">Cancel</button><button type="submit" class="btn dark">Create RFQ</button></div>
+    <div class="rfq-ff"><button type="button" class="btn" onclick="go('${fromRfqs ? 'rfqs' : x.id.toLowerCase()}')">Cancel</button><button type="submit" class="btn dark">Create RFQ</button></div>
   </form>`;
+}
+/* RFQ module: list of RFQs with the second entry point, "New RFQ" (pick service + qualified deal) */
+const qualifiedDeals = () => deals.filter(d => d.stage === 'qualified' && !d.outcome);
+const dealOpt = d => `${d.id} · ${d.name} · ${money(d.amount)}`;
+function rfqListView() {
+  const list = Object.values(rfqs).sort((a, b) => b.created.localeCompare(a.created));
+  return `
+  <div class="lk-head" style="margin-bottom:18px"><div><h2 style="margin:0;font-size:20px">RFQs</h2><div class="subt">Requests for quote. Each RFQ is linked to a qualified CRM deal.</div></div>
+    <button class="btn primary" onclick="newRfqModal()">+ New RFQ</button></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>RFQ</th><th>Customer</th><th>Service</th><th>Route</th><th>Status</th><th>Deal</th><th>Created</th></tr></thead>
+    <tbody>${list.map(r => `<tr data-go="${r.id.toLowerCase()}" tabindex="0">
+      <td><b>${r.id}</b></td><td>${esc(r.customer)}</td><td>${esc(r.service)}</td><td>${esc(r.routeShort)}</td><td>${rfqPill(r)}</td>
+      <td>${r.dealId ? idLink(r.dealId) : '<span style="color:var(--muted)">Not linked</span>'}</td><td class="tnum">${dmy(r.created)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function newRfqModal() {
+  const ds = qualifiedDeals();
+  modal(`<h3>Create new RFQ</h3><p class="lead">Choose the service and the deal this RFQ is for</p>
+    <div class="field"><label for="nr-svc">Service Type <span class="req">*</span></label><select id="nr-svc">${RFQ_OPTS.service.map(o => `<option>${esc(o)}</option>`).join('')}</select></div>
+    <div class="field"><label for="nr-deal">Deal <span class="req">*</span></label>
+      <select id="nr-deal" onchange="nrPick()"><option value="">Select a deal</option>${ds.map(d => `<option value="${d.id}">${esc(dealOpt(d))}</option>`).join('')}</select>
+      <small class="nr-hint">Only deals moved to Qualified in the CRM are listed. Check the ID, customer and amount before you proceed.</small></div>
+    <div id="nr-sum"></div>
+    <div class="mfoot"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn dark" id="nr-go" disabled onclick="nrProceed()">Proceed</button></div>`);
+}
+/* show the picked deal's details so the right deal is linked */
+function nrPick() {
+  const d = dealById($('#nr-deal').value);
+  $('#nr-go').disabled = !d;
+  $('#nr-sum').innerHTML = d ? `<div class="nr-sum"><div><span>Deal ID</span><b>${d.id}</b></div><div><span>Customer</span><b>${esc(d.name)}</b></div>
+    <div><span>Amount</span><b class="tnum" style="color:var(--gold)">${money(d.amount)}</b></div><div><span>Contact</span><b>${esc(d.contact)}</b></div>
+    <div><span>Owner</span><b>${esc(OWNERS[d.owner].name)}</b></div><div><span>Product</span><b>${esc(d.product)}</b></div></div>` : '';
+}
+function nrProceed() {
+  const d = dealById($('#nr-deal').value); if (!d) return;
+  ui.rfqEntry = { dealId: d.id, service: $('#nr-svc').value };
+  closeModal(); go('rfq-new-' + d.id.toLowerCase());
 }
 function rqCompany() {
   const name = $('#rq-co').value.trim(), d = deals.find(o => o.name.toLowerCase() === name.toLowerCase());
@@ -1157,7 +1203,10 @@ function submitRfq(dealId) {
     containers: [{ cls: v('rq-cls'), commodity: v('rq-com'), size: v('rq-size'), type: v('rq-type'), count: +v('rq-cnt'), weight: Math.round(wt), hs: v('rq-hs') }],
     quotes: [] };
   (x.rfqs = x.rfqs || []).push(id);
-  addHistory(x.id, { t: `${id} generated from this deal`, tag: 'RFQ', tagCls: 'link', comment: `${rfqs[id].service} · ${rfqs[id].routeShort}` });
+  const viaRfqs = ui.rfqEntry && ui.rfqEntry.dealId === x.id;
+  rfqs[id].source = viaRfqs ? 'RFQ module' : 'CRM';
+  addHistory(x.id, { t: viaRfqs ? `${id} created in the RFQ module and linked to this deal` : `${id} generated from this deal`, tag: 'RFQ', tagCls: 'link', comment: `${rfqs[id].service} · ${rfqs[id].routeShort}` });
+  ui.rfqEntry = null;
   toast(`${id} created and linked to ${x.id}`);
   go(id.toLowerCase());
 }

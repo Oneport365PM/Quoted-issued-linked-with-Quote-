@@ -58,6 +58,14 @@ Click-through prototype in `prototype/index.html` (open it in a browser, no buil
   *Create new RFQ* form (`#rfq-new-op-…`), laid out like the live form. Only **Company Name**, **Email** (the deal
   contact's email; it follows the Contact picked) and **Owner** are filled in from the deal; every other field starts empty. Required fields are marked * and checked on submit.
   **Create RFQ** creates the next RFQ number, links it to the deal (deal page RFQ field, board chip, deal history) and opens it.
+- **Two entry points link an RFQ to a deal:**
+  1. *From the deal* (unchanged): **Generate RFQ** on a Qualified deal's page.
+  2. *From the RFQ module*: the RFQ icon in the left rail opens the RFQ list (`#rfqs`). **New RFQ** opens a *Create new
+     RFQ* pop-up where sales picks the Service Type and the **Deal**. The deal list only holds Qualified deals and each
+     option reads `ID · Customer · Amount` (e.g. `OP-26-11-023 · Manuchar Trading House Int Nigeria · $3,500`); picking one
+     shows its ID, customer, amount, contact, owner and product so the right deal is linked. **Proceed** opens the same
+     form, with the chosen service type set and company, email and owner from the deal. The RFQ is saved with source
+     "RFQ module" and the deal history says it was created in the RFQ module.
 - Board cards can be dragged between columns (on touch screens: press and hold, then drag). Dropping any deal on Qualified opens
   "Send to Finance"; the card moves only when Finance clears it (Cancel leaves it where it was). Dropping on Quote
   Issued moves the deal even with no quote yet; dropping on Closed asks Won or Lost.
